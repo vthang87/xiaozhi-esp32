@@ -305,8 +305,9 @@
     </section>
 
     <footer>
-      Prepare hosted bins with <code>python scripts/prepare_installer.py &lt;variant&gt;</code>, then add Worker
-      <code>xiaozhi-install</code> in the Cloudflare dashboard. Local preview:
+      Prepare hosted bins with GitHub Actions (**Build Boards**) or
+      <code>python scripts/prepare_installer.py &lt;variant&gt;</code>. Worker
+      <code>xiaozhi-install</code> is deployed from CI. Local preview:
       <code>python3 -m http.server 8080 --directory web/installer</code>
     </footer>
   </main>

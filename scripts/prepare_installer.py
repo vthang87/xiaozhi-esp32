@@ -268,7 +268,7 @@ def main() -> int:
     print()
     print("Local preview:")
     print("  python3 -m http.server 8080 --directory web/installer")
-    print("Cloudflare: add Worker xiaozhi-install in the dashboard.")
+    print("GitHub Actions packs web/installer after each board build.")
     return 0
 
 

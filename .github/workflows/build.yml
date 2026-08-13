@@ -8,6 +8,12 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      board:
+        description: Board directory to build (empty or "all" = every variant)
+        required: false
+        default: es3c28p
 
 permissions:
   contents: read
@@ -36,8 +42,19 @@ jobs:
         name: Select variants based on changes
         env:
           ALL_VARIANTS: ${{ steps.list.outputs.all_variants }}
+          DISPATCH_BOARD: ${{ github.event.inputs.board }}
         run: |
           EVENT_NAME="${{ github.event_name }}"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ -z "$DISPATCH_BOARD" || "$DISPATCH_BOARD" == "all" ]]; then
+              echo "variants=$ALL_VARIANTS" >> $GITHUB_OUTPUT
+            else
+              FILTERED=$(echo "$ALL_VARIANTS" | jq -c --arg board "$DISPATCH_BOARD" 'map(select(.board == $board))')
+              echo "variants=$FILTERED" >> $GITHUB_OUTPUT
+            fi
+            exit 0
+          fi
 
           # push 到 main 分支，编译全部变体
           if [[ "$EVENT_NAME" == "push" ]]; then
@@ -102,6 +119,10 @@ jobs:
         run: |
           source $IDF_PATH/export.sh
           python scripts/release.py ${{ matrix.board }} --name ${{ matrix.name }}
+          if [ "${{ matrix.name }}" = "es3c28p" ]; then
+            idf.py es3c28p_storybook_theme
+          fi
+          python scripts/prepare_installer.py ${{ matrix.name }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -109,3 +130,59 @@ jobs:
           name: xiaozhi_${{ matrix.name }}_${{ github.sha }}.bin
           path: build/merged-binary.bin
           if-no-files-found: error
+
+      - name: Upload installer firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.name }}
+          path: web/installer/firmware/${{ matrix.name }}/
+          if-no-files-found: error
+
+  installer:
+    name: Pack xiaozhi-install
+    needs: [prepare, build]
+    if: ${{ always() && needs.prepare.result == 'success' && needs.build.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write board catalog
+        run: python scripts/prepare_installer.py
+
+      - name: Download installer firmware
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: staging
+          merge-multiple: false
+
+      - name: Assemble installer
+        run: |
+          mkdir -p web/installer/firmware
+          shopt -s nullglob
+          for dir in staging/installer-*; do
+            name="${dir##*/installer-}"
+            rm -rf "web/installer/firmware/$name"
+            mv "$dir" "web/installer/firmware/$name"
+            echo "packed $name"
+          done
+          find web/installer/firmware -type f | sort
+
+      - name: Upload xiaozhi-install
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiaozhi-install
+          path: web/installer
+          if-no-files-found: error
+
+      - name: Deploy Cloudflare Worker
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
