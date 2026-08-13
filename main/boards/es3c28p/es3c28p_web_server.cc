@@ -13,7 +13,7 @@
 #include <esp_system.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <wifi_station.h>
+#include <wifi_manager.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -115,7 +115,7 @@ Es3c28pWebServer::~Es3c28pWebServer() {
 }
 
 std::string Es3c28pWebServer::url() const {
-    const auto ip = WifiStation::GetInstance().GetIpAddress();
+    const auto ip = WifiManager::GetInstance().GetIpAddress();
     return ip.empty() ? std::string() : "http://" + ip + "/";
 }
 
@@ -216,7 +216,7 @@ esp_err_t Es3c28pWebServer::HandleIndex(httpd_req_t* req) {
 esp_err_t Es3c28pWebServer::HandleStatus(httpd_req_t* req) {
     auto* self = static_cast<Es3c28pWebServer*>(req->user_ctx);
     auto& board = Board::GetInstance();
-    auto& wifi = WifiStation::GetInstance();
+    auto& wifi = WifiManager::GetInstance();
     int battery = 0;
     bool charging = false;
     bool discharging = false;

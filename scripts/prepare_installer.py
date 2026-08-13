@@ -225,7 +225,7 @@ def prepare_variant(variant: str, boards: list[dict], version: str) -> int:
     if not parts:
         print(
             "No firmware found. Build first:\n"
-            f"  python scripts/release.py {meta['board']}\n"
+            f"  python scripts/build.py {meta['board']}\n"
             "or:\n"
             "  idf.py merge-bin",
             file=sys.stderr,

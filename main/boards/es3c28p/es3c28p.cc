@@ -22,7 +22,7 @@
 #include <esp_log.h>
 #include <esp_lvgl_port.h>
 #include <lvgl.h>
-#include <wifi_station.h>
+#include <wifi_manager.h>
 
 #include <algorithm>
 #include <array>
@@ -354,8 +354,8 @@ private:
         boot_button_.OnClick([this]() {
             auto& app = Application::GetInstance();
             if (app.GetDeviceState() == kDeviceStateStarting &&
-                !WifiStation::GetInstance().IsConnected()) {
-                ResetWifiConfiguration();
+                !WifiManager::GetInstance().IsConnected()) {
+                EnterWifiConfigMode();
             }
             app.ToggleChatState();
         });
