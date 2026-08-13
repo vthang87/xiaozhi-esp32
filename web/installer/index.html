@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flash ES3C28P</title>
+  <style>
+    :root {
+      --paper: #f7edcf;
+      --cream: #fffaf0;
+      --ink: #24423d;
+      --muted: #57716b;
+      --line: #31534c;
+      --coral: #ef765f;
+      --gold: #f5c84e;
+      --sky: #8fd6da;
+      --hill: #78bd76;
+      --page: #b9d5cf;
+      --rose: #a25245;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100dvh;
+      color: var(--ink);
+      background: var(--page);
+      font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
+    }
+    a { color: var(--line); }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin: 0 0 10px;
+    }
+    .lede {
+      margin: 0;
+      max-width: 36rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+    .device {
+      width: 320px;
+      height: 240px;
+      margin-left: auto;
+      position: relative;
+      overflow: hidden;
+      background: var(--paper);
+      border: 2px solid var(--line);
+      box-shadow: 0 8px 0 var(--line);
+      color: var(--ink);
+    }
+    .sky {
+      height: 25px;
+      background: var(--sky);
+      display: flex;
+      align-items: center;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .sky b { margin-right: auto; font-size: 13px; }
+    .scene {
+      height: 175px;
+      position: relative;
+      padding: 8px 9px;
+      background: #d9f0e7;
+    }
+    .hill {
+      position: absolute;
+      left: -20px;
+      right: -20px;
+      bottom: -34px;
+      height: 86px;
+      border-radius: 50%;
+      background: var(--hill);
+      border-top: 2px solid var(--line);
+    }
+    .sun {
+      position: absolute;
+      right: 18px;
+      top: 13px;
+      width: 31px;
+      height: 31px;
+      border: 2px solid var(--line);
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .friend {
+      position: absolute;
+      left: 13px;
+      top: 18px;
+      width: 80px;
+      height: 84px;
+      background: var(--coral);
+      border: 2px solid var(--line);
+      border-radius: 42px 42px 30px 30px;
+      box-shadow: 0 3px 0 var(--line);
+    }
+    .eyes {
+      text-align: center;
+      font-size: 24px;
+      margin-top: 24px;
+      line-height: 1;
+    }
+    .message {
+      position: absolute;
+      left: 103px;
+      right: 10px;
+      top: 19px;
+      background: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: 18px 18px 18px 4px;
+      padding: 9px 10px;
+      min-height: 75px;
+    }
+    .message small {
+      color: var(--rose);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .message p {
+      font-size: 15px;
+      line-height: 1.2;
+      margin: 5px 0 0;
+    }
+    .tabs {
+      height: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--cream);
+      border-top: 2px solid var(--line);
+    }
+    .tabs span {
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .tabs span.on {
+      background: var(--coral);
+      color: var(--cream);
+    }
+    .panel {
+      background: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--line);
+      padding: 22px;
+    }
+    .panel + .panel { margin-top: 20px; }
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .meta { color: var(--muted); line-height: 1.5; }
+    .meta strong { color: var(--ink); }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    button, .file-btn {
+      appearance: none;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 20px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--line);
+    }
+    button:active, .file-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 var(--line);
+    }
+    button.primary {
+      background: var(--line);
+      color: var(--cream);
+    }
+    button.gold, .file-btn {
+      background: var(--gold);
+      color: var(--ink);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    esp-web-install-button { display: inline-block; }
+    esp-web-install-button::part(button) {
+      background: var(--line);
+      color: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 20px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--line);
+    }
+    .unsupported {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--gold);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .steps {
+      list-style: none;
+      margin: 20px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+    .steps li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .steps span {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--sky);
+      border: 2px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--ink);
+    }
+    .note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #d9f0e7;
+      border: 2px solid var(--line);
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .file-name { color: var(--muted); }
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+    .modes label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      cursor: pointer;
+    }
+    .modes input { accent-color: var(--line); }
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+    }
+    @media (max-width: 767px) {
+      .hero, .modes { grid-template-columns: 1fr; }
+      .device { margin: 8px auto 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      button:active, .file-btn:active { transform: none; }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>Flash ES3C28P</h1>
+        <p class="lede">Install XiaoZhi on the LCDWiki 2.8-inch ESP32-S3 from Chrome or Edge over USB.</p>
+      </div>
+      <aside class="device" aria-hidden="true">
+        <div class="sky"><b>ES3C28P</b><span>USB</span></div>
+        <div class="scene">
+          <div class="sun"></div>
+          <div class="hill"></div>
+          <div class="friend"><div class="eyes">• ᴗ •</div></div>
+          <div class="message">
+            <small>STORYBOOK GARDEN</small>
+            <p>Connect the board, then install the firmware.</p>
+          </div>
+        </div>
+        <div class="tabs"><span class="on">TALK</span><span>SONGS</span></div>
+      </aside>
+    </header>
+
+    <section class="panel">
+      <div class="row">
+        <div class="meta">
+          Firmware <strong id="fw-version">2.0.5</strong><br />
+          Target <strong>ESP32-S3</strong> · 16 MB flash · native USB
+        </div>
+        <div class="actions">
+          <esp-web-install-button id="install-btn" manifest="./manifest.json">
+            <button slot="activate" class="primary">Connect and install</button>
+            <span slot="unsupported" class="unsupported" style="display:block">
+              Web Serial is not available here. Open this page in Chrome or Edge on a desktop computer.
+            </span>
+          </esp-web-install-button>
+        </div>
+      </div>
+      <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Checking hosted firmware…</p>
+      <ol class="steps">
+        <li><span>1</span><div>Plug the ES3C28P into USB. Use the native USB-C port, not a UART dongle, for the first flash.</div></li>
+        <li><span>2</span><div>Hold <strong>BOOT</strong> if the serial port does not appear, then click <strong>Connect and install</strong> and pick the device.</div></li>
+        <li><span>3</span><div>Allow erase on first install so the 16 MB partition table (including the theme slot) is written. Press RESET when it finishes.</div></li>
+      </ol>
+      <div class="note">
+        First install writes a full image. Later you can flash only a theme package at <code>0xF80000</code> without replacing the app.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Install a file from this computer</h2>
+      <p class="sub">Use this when the Worker has no hosted <code>.bin</code>, or when you just built with <code>python scripts/release.py es3c28p</code>.</p>
+      <div class="modes">
+        <label>
+          <input type="radio" name="kind" value="firmware" checked />
+          <span>Full firmware (<code>merged-binary.bin</code>, offset 0)</span>
+        </label>
+        <label>
+          <input type="radio" name="kind" value="theme" />
+          <span>Theme package (<code>.theme.bin</code>, offset 0xF80000)</span>
+        </label>
+      </div>
+      <div class="file-row">
+        <label class="file-btn">
+          Choose file
+          <input id="local-file" type="file" accept=".bin,.theme.bin" hidden />
+        </label>
+        <span class="file-name" id="file-name">No file selected</span>
+        <button class="primary" id="use-local" type="button" disabled>Use this file</button>
+      </div>
+    </section>
+
+    <footer>
+      Prepare hosted bins with <code>python scripts/prepare_installer.py</code>, then add Worker
+      <code>es3c28p-install</code> in the Cloudflare dashboard. Local preview:
+      <code>python3 -m http.server 8080 --directory web/installer</code>
+    </footer>
+  </main>
+  <script>
+    (function () {
+      const installBtn = document.getElementById("install-btn");
+      const versionEl = document.getElementById("fw-version");
+      const hostStatus = document.getElementById("host-status");
+      const fileInput = document.getElementById("local-file");
+      const fileName = document.getElementById("file-name");
+      const useLocal = document.getElementById("use-local");
+      let objectUrls = [];
+      let selectedFile = null;
+
+      function revokeAll() {
+        objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        objectUrls = [];
+      }
+
+      function blobUrl(blob) {
+        const url = URL.createObjectURL(blob);
+        objectUrls.push(url);
+        return url;
+      }
+
+      function firmwareManifest(path, version, erase) {
+        return {
+          name: "ES3C28P XiaoZhi",
+          version: version,
+          new_install_prompt_erase: erase,
+          builds: [{ chipFamily: "ESP32-S3", parts: [{ path: path, offset: 0 }] }],
+        };
+      }
+
+      function themeManifest(path, version) {
+        return {
+          name: "ES3C28P theme",
+          version: version,
+          new_install_prompt_erase: false,
+          builds: [{ chipFamily: "ESP32-S3", parts: [{ path: path, offset: 0xF80000 }] }],
+        };
+      }
+
+      fetch("./manifest.json")
+        .then((r) => r.json())
+        .then((m) => {
+          if (m.version) versionEl.textContent = m.version;
+        })
+        .catch(() => {});
+
+      fetch("./firmware/ready.json")
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then((ready) => {
+          if (ready.version) versionEl.textContent = ready.version;
+          hostStatus.textContent = "Hosted firmware is ready. Connect the board and install.";
+        })
+        .catch(() => {
+          hostStatus.textContent =
+            "No hosted firmware on this Worker yet. Choose a local merged-binary.bin below, then click Use this file.";
+        });
+
+      fileInput.addEventListener("change", () => {
+        selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        fileName.textContent = selectedFile ? selectedFile.name : "No file selected";
+        useLocal.disabled = !selectedFile;
+        if (selectedFile && /theme/i.test(selectedFile.name)) {
+          document.querySelector('input[name="kind"][value="theme"]').checked = true;
+        }
+      });
+
+      useLocal.addEventListener("click", () => {
+        if (!selectedFile) return;
+        revokeAll();
+        const kind = document.querySelector('input[name="kind"]:checked').value;
+        const fileUrl = blobUrl(selectedFile);
+        const version = selectedFile.name;
+        const manifest =
+          kind === "theme"
+            ? themeManifest(fileUrl, version)
+            : firmwareManifest(fileUrl, version, true);
+        installBtn.manifest = blobUrl(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+        hostStatus.textContent =
+          kind === "theme"
+            ? "Theme file selected. Connect and install to write the theme partition only."
+            : "Local firmware selected. Connect and install to flash from offset 0.";
+      });
+    })();
+  </script>
+</body>
+</html>

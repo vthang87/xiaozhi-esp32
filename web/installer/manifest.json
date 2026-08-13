@@ -1,0 +1,16 @@
+{
+  "name": "ES3C28P XiaoZhi",
+  "version": "2.0.5",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        {
+          "path": "firmware/merged-binary.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}
