@@ -1,10 +1,10 @@
-// Cloudflare Workers config — serves the ES3C28P web installer as static assets.
-// Add this Worker in the Cloudflare dashboard (Connect to Git). Do not auto-deploy
-// from CI. ESP-IDF cannot build on Cloudflare; copy firmware with
-// scripts/prepare_installer.py if you want hosted .bin files, or flash a local
-// merged-binary.bin from the page.
+// Cloudflare Workers config — serves the XiaoZhi web installer as static assets.
+// Add Worker `xiaozhi-install` in the Cloudflare dashboard (Connect to Git).
+// Do not auto-deploy from CI. ESP-IDF cannot build on Cloudflare; copy firmware
+// with `python scripts/prepare_installer.py <variant>` if you want hosted .bin
+// files, or flash a local merged-binary.bin from the page.
 {
-  "name": "es3c28p-install",
+  "name": "xiaozhi-install",
   "compatibility_date": "2026-08-13",
   "observability": {
     "enabled": true,

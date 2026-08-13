@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flash ES3C28P</title>
+  <title>Install XiaoZhi</title>
   <style>
     :root {
       --paper: #f7edcf;
@@ -16,7 +16,6 @@
       --sky: #8fd6da;
       --hill: #78bd76;
       --page: #b9d5cf;
-      --rose: #a25245;
       --radius: 16px;
     }
     * { box-sizing: border-box; }
@@ -35,7 +34,7 @@
     }
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
       gap: 28px;
       align-items: end;
       margin-bottom: 28px;
@@ -53,109 +52,37 @@
       font-size: 1.05rem;
       line-height: 1.45;
     }
-    .device {
-      width: 320px;
-      height: 240px;
-      margin-left: auto;
-      position: relative;
-      overflow: hidden;
-      background: var(--paper);
-      border: 2px solid var(--line);
-      box-shadow: 0 8px 0 var(--line);
-      color: var(--ink);
-    }
-    .sky {
-      height: 25px;
-      background: var(--sky);
-      display: flex;
-      align-items: center;
-      padding: 0 9px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .sky b { margin-right: auto; font-size: 13px; }
-    .scene {
-      height: 175px;
-      position: relative;
-      padding: 8px 9px;
-      background: #d9f0e7;
-    }
-    .hill {
-      position: absolute;
-      left: -20px;
-      right: -20px;
-      bottom: -34px;
-      height: 86px;
-      border-radius: 50%;
-      background: var(--hill);
-      border-top: 2px solid var(--line);
-    }
-    .sun {
-      position: absolute;
-      right: 18px;
-      top: 13px;
-      width: 31px;
-      height: 31px;
-      border: 2px solid var(--line);
-      border-radius: 50%;
-      background: var(--gold);
-    }
-    .friend {
-      position: absolute;
-      left: 13px;
-      top: 18px;
-      width: 80px;
-      height: 84px;
-      background: var(--coral);
-      border: 2px solid var(--line);
-      border-radius: 42px 42px 30px 30px;
-      box-shadow: 0 3px 0 var(--line);
-    }
-    .eyes {
-      text-align: center;
-      font-size: 24px;
-      margin-top: 24px;
-      line-height: 1;
-    }
-    .message {
-      position: absolute;
-      left: 103px;
-      right: 10px;
-      top: 19px;
+    .picker {
       background: var(--cream);
       border: 2px solid var(--line);
-      border-radius: 18px 18px 18px 4px;
-      padding: 9px 10px;
-      min-height: 75px;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--line);
+      padding: 16px;
     }
-    .message small {
-      color: var(--rose);
-      font-size: 10px;
-      font-weight: 700;
-    }
-    .message p {
-      font-size: 15px;
-      line-height: 1.2;
-      margin: 5px 0 0;
-    }
-    .tabs {
-      height: 40px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: var(--cream);
-      border-top: 2px solid var(--line);
-    }
-    .tabs span {
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      font-size: 13px;
+    .picker label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 800;
       color: var(--muted);
+      margin: 0 0 6px;
     }
-    .tabs span.on {
-      background: var(--coral);
-      color: var(--cream);
+    .picker input[type="search"],
+    .picker select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
     }
+    .picker select { margin-top: 8px; min-height: 168px; }
+    .chip {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .chip strong { color: var(--ink); }
     .panel {
       background: var(--cream);
       border: 2px solid var(--line);
@@ -183,7 +110,6 @@
     }
     .meta { color: var(--muted); line-height: 1.5; }
     .meta strong { color: var(--ink); }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     button, .file-btn {
       appearance: none;
       border: 2px solid var(--line);
@@ -202,7 +128,7 @@
       background: var(--line);
       color: var(--cream);
     }
-    button.gold, .file-btn {
+    .file-btn {
       background: var(--gold);
       color: var(--ink);
     }
@@ -294,6 +220,7 @@
       cursor: pointer;
     }
     .modes input { accent-color: var(--line); }
+    .hidden { display: none; }
     footer {
       margin-top: 28px;
       color: var(--muted);
@@ -306,7 +233,7 @@
     }
     @media (max-width: 767px) {
       .hero, .modes { grid-template-columns: 1fr; }
-      .device { margin: 8px auto 0; }
+      .picker select { min-height: 120px; }
     }
     @media (prefers-reduced-motion: reduce) {
       button:active, .file-btn:active { transform: none; }
@@ -318,61 +245,53 @@
   <main>
     <header class="hero">
       <div>
-        <h1>Flash ES3C28P</h1>
-        <p class="lede">Install XiaoZhi on the LCDWiki 2.8-inch ESP32-S3 from Chrome or Edge over USB.</p>
+        <h1>Install XiaoZhi</h1>
+        <p class="lede">Pick a board, then flash firmware from Chrome or Edge over USB.</p>
       </div>
-      <aside class="device" aria-hidden="true">
-        <div class="sky"><b>ES3C28P</b><span>USB</span></div>
-        <div class="scene">
-          <div class="sun"></div>
-          <div class="hill"></div>
-          <div class="friend"><div class="eyes">• ᴗ •</div></div>
-          <div class="message">
-            <small>STORYBOOK GARDEN</small>
-            <p>Connect the board, then install the firmware.</p>
-          </div>
-        </div>
-        <div class="tabs"><span class="on">TALK</span><span>SONGS</span></div>
-      </aside>
+      <div class="picker">
+        <label for="board-filter">Board</label>
+        <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
+        <select id="board-select" size="8" aria-label="Board list"></select>
+        <p class="chip">Chip <strong id="chip-label">-</strong> · <span id="board-count">0</span> variants</p>
+      </div>
     </header>
 
     <section class="panel">
       <div class="row">
         <div class="meta">
-          Firmware <strong id="fw-version">2.0.5</strong><br />
-          Target <strong>ESP32-S3</strong> · 16 MB flash · native USB
+          Firmware <strong id="fw-version">-</strong><br />
+          Target <strong id="board-label">-</strong>
         </div>
-        <div class="actions">
-          <esp-web-install-button id="install-btn" manifest="./manifest.json">
-            <button slot="activate" class="primary">Connect and install</button>
-            <span slot="unsupported" class="unsupported" style="display:block">
-              Web Serial is not available here. Open this page in Chrome or Edge on a desktop computer.
-            </span>
-          </esp-web-install-button>
-        </div>
+        <esp-web-install-button id="install-btn" manifest="./manifest.json">
+          <button slot="activate" class="primary">Connect and install</button>
+          <span slot="unsupported" class="unsupported" style="display:block">
+            Web Serial is not available here. Open this page in Chrome or Edge on a desktop computer.
+          </span>
+        </esp-web-install-button>
       </div>
-      <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Checking hosted firmware…</p>
+      <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Loading board list…</p>
       <ol class="steps">
-        <li><span>1</span><div>Plug the ES3C28P into USB. Use the native USB-C port, not a UART dongle, for the first flash.</div></li>
-        <li><span>2</span><div>Hold <strong>BOOT</strong> if the serial port does not appear, then click <strong>Connect and install</strong> and pick the device.</div></li>
-        <li><span>3</span><div>Allow erase on first install so the 16 MB partition table (including the theme slot) is written. Press RESET when it finishes.</div></li>
+        <li><span>1</span><div>Select the exact board variant. A mismatched image can leave the device unbootable.</div></li>
+        <li><span>2</span><div>Plug the board into USB. Hold <strong>BOOT</strong> if the serial port does not appear.</div></li>
+        <li><span>3</span><div>Click <strong>Connect and install</strong>, pick the port, and allow erase on first install. Press RESET when it finishes.</div></li>
       </ol>
       <div class="note">
-        First install writes a full image. Later you can flash only a theme package at <code>0xF80000</code> without replacing the app.
+        Hosted images are optional. If this Worker has no <code>.bin</code> for the selected board, choose a local
+        <code>merged-binary.bin</code> from <code>python scripts/release.py &lt;board&gt;</code>.
       </div>
     </section>
 
     <section class="panel">
       <h2>Install a file from this computer</h2>
-      <p class="sub">Use this when the Worker has no hosted <code>.bin</code>, or when you just built with <code>python scripts/release.py es3c28p</code>.</p>
+      <p class="sub">The selected board sets the chip family. Theme packages are only offered for boards that have a theme partition.</p>
       <div class="modes">
         <label>
           <input type="radio" name="kind" value="firmware" checked />
           <span>Full firmware (<code>merged-binary.bin</code>, offset 0)</span>
         </label>
-        <label>
+        <label id="theme-mode" class="hidden">
           <input type="radio" name="kind" value="theme" />
-          <span>Theme package (<code>.theme.bin</code>, offset 0xF80000)</span>
+          <span>Theme package (<code>.theme.bin</code>)</span>
         </label>
       </div>
       <div class="file-row">
@@ -386,8 +305,8 @@
     </section>
 
     <footer>
-      Prepare hosted bins with <code>python scripts/prepare_installer.py</code>, then add Worker
-      <code>es3c28p-install</code> in the Cloudflare dashboard. Local preview:
+      Prepare hosted bins with <code>python scripts/prepare_installer.py &lt;variant&gt;</code>, then add Worker
+      <code>xiaozhi-install</code> in the Cloudflare dashboard. Local preview:
       <code>python3 -m http.server 8080 --directory web/installer</code>
     </footer>
   </main>
@@ -395,12 +314,22 @@
     (function () {
       const installBtn = document.getElementById("install-btn");
       const versionEl = document.getElementById("fw-version");
+      const boardLabel = document.getElementById("board-label");
+      const chipLabel = document.getElementById("chip-label");
+      const boardCount = document.getElementById("board-count");
       const hostStatus = document.getElementById("host-status");
+      const filterEl = document.getElementById("board-filter");
+      const selectEl = document.getElementById("board-select");
+      const themeMode = document.getElementById("theme-mode");
       const fileInput = document.getElementById("local-file");
       const fileName = document.getElementById("file-name");
       const useLocal = document.getElementById("use-local");
+      let boards = [];
+      let selected = null;
+      let catalogVersion = "";
       let objectUrls = [];
       let selectedFile = null;
+      let boardRequest = 0;
 
       function revokeAll() {
         objectUrls.forEach((url) => URL.revokeObjectURL(url));
@@ -413,66 +342,129 @@
         return url;
       }
 
-      function firmwareManifest(path, version, erase) {
+      function applyManifest(manifest) {
+        installBtn.manifest = blobUrl(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+      }
+
+      function buildManifest(name, version, chipFamily, parts, erase) {
         return {
-          name: "ES3C28P XiaoZhi",
+          name: name,
           version: version,
           new_install_prompt_erase: erase,
-          builds: [{ chipFamily: "ESP32-S3", parts: [{ path: path, offset: 0 }] }],
+          builds: [{ chipFamily: chipFamily, parts: parts }],
         };
       }
 
-      function themeManifest(path, version) {
-        return {
-          name: "ES3C28P theme",
-          version: version,
-          new_install_prompt_erase: false,
-          builds: [{ chipFamily: "ESP32-S3", parts: [{ path: path, offset: 0xF80000 }] }],
-        };
+      function filteredBoards() {
+        const q = filterEl.value.trim().toLowerCase();
+        if (!q) return boards;
+        return boards.filter((b) =>
+          [b.id, b.board, b.name, b.title, b.chipFamily].join(" ").toLowerCase().includes(q)
+        );
       }
 
-      fetch("./manifest.json")
+      function renderSelect() {
+        const list = filteredBoards();
+        const keep = selected && list.some((b) => b.id === selected.id) ? selected.id : (list[0] && list[0].id);
+        selectEl.innerHTML = "";
+        list.forEach((b) => {
+          const opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.title + " · " + b.chipFamily;
+          selectEl.appendChild(opt);
+        });
+        if (keep) selectEl.value = keep;
+        const next = boards.find((b) => b.id === selectEl.value) || null;
+        if (next && (!selected || selected.id !== next.id)) setBoard(next);
+      }
+
+      function setBoard(board) {
+        selected = board;
+        boardLabel.textContent = board.title;
+        chipLabel.textContent = board.chipFamily;
+        versionEl.textContent = catalogVersion || "-";
+        themeMode.classList.toggle("hidden", !board.themeOffset);
+        if (!board.themeOffset) {
+          document.querySelector('input[name="kind"][value="firmware"]').checked = true;
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.set("board", board.id);
+        history.replaceState(null, "", url);
+        revokeAll();
+        const req = ++boardRequest;
+        hostStatus.textContent = "Checking hosted firmware for " + board.id + "…";
+        fetch("./firmware/" + encodeURIComponent(board.id) + "/ready.json")
+          .then((r) => (r.ok ? r.json() : Promise.reject()))
+          .then((ready) => {
+            if (req !== boardRequest) return;
+            if (ready.version) versionEl.textContent = ready.version;
+            const parts = ready.parts && ready.parts.length
+              ? ready.parts
+              : [{ path: board.firmware, offset: 0 }];
+            applyManifest(buildManifest("XiaoZhi " + board.id, ready.version || catalogVersion, ready.chipFamily || board.chipFamily, parts, true));
+            hostStatus.textContent = "Hosted firmware is ready for " + board.title + ". Connect the board and install.";
+          })
+          .catch(() => {
+            if (req !== boardRequest) return;
+            applyManifest(buildManifest("XiaoZhi " + board.id, catalogVersion || "local", board.chipFamily, [{ path: board.firmware, offset: 0 }], true));
+            hostStatus.textContent =
+              "No hosted firmware for " + board.id + " yet. Choose a local merged-binary.bin below, then click Use this file.";
+          });
+      }
+
+      fetch("./boards.json")
         .then((r) => r.json())
-        .then((m) => {
-          if (m.version) versionEl.textContent = m.version;
-        })
-        .catch(() => {});
-
-      fetch("./firmware/ready.json")
-        .then((r) => (r.ok ? r.json() : Promise.reject()))
-        .then((ready) => {
-          if (ready.version) versionEl.textContent = ready.version;
-          hostStatus.textContent = "Hosted firmware is ready. Connect the board and install.";
+        .then((catalog) => {
+          boards = catalog.boards || [];
+          catalogVersion = catalog.version || "";
+          boardCount.textContent = String(boards.length);
+          const wanted = new URLSearchParams(window.location.search).get("board");
+          const initial = boards.find((b) => b.id === wanted) || boards.find((b) => b.id === "es3c28p") || boards[0] || null;
+          selected = initial;
+          renderSelect();
+          if (initial) setBoard(initial);
         })
         .catch(() => {
-          hostStatus.textContent =
-            "No hosted firmware on this Worker yet. Choose a local merged-binary.bin below, then click Use this file.";
+          hostStatus.textContent = "Could not load boards.json. Serve this folder over HTTP and retry.";
         });
+
+      filterEl.addEventListener("input", renderSelect);
+      selectEl.addEventListener("change", () => {
+        const next = boards.find((b) => b.id === selectEl.value);
+        if (next) setBoard(next);
+      });
 
       fileInput.addEventListener("change", () => {
         selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
         fileName.textContent = selectedFile ? selectedFile.name : "No file selected";
         useLocal.disabled = !selectedFile;
-        if (selectedFile && /theme/i.test(selectedFile.name)) {
+        if (selectedFile && /theme/i.test(selectedFile.name) && selected && selected.themeOffset) {
           document.querySelector('input[name="kind"][value="theme"]').checked = true;
         }
       });
 
       useLocal.addEventListener("click", () => {
-        if (!selectedFile) return;
-        revokeAll();
+        if (!selectedFile || !selected) return;
         const kind = document.querySelector('input[name="kind"]:checked').value;
+        if (kind === "theme" && !selected.themeOffset) {
+          hostStatus.textContent = "This board has no theme partition.";
+          return;
+        }
+        revokeAll();
         const fileUrl = blobUrl(selectedFile);
-        const version = selectedFile.name;
-        const manifest =
-          kind === "theme"
-            ? themeManifest(fileUrl, version)
-            : firmwareManifest(fileUrl, version, true);
-        installBtn.manifest = blobUrl(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
-        hostStatus.textContent =
-          kind === "theme"
-            ? "Theme file selected. Connect and install to write the theme partition only."
-            : "Local firmware selected. Connect and install to flash from offset 0.";
+        const parts = kind === "theme"
+          ? [{ path: fileUrl, offset: selected.themeOffset }]
+          : [{ path: fileUrl, offset: 0 }];
+        applyManifest(buildManifest(
+          "XiaoZhi " + selected.id,
+          selectedFile.name,
+          selected.chipFamily,
+          parts,
+          kind !== "theme"
+        ));
+        hostStatus.textContent = kind === "theme"
+          ? "Theme file selected for " + selected.title + ". Connect and install to write the theme partition only."
+          : "Local firmware selected for " + selected.title + " (" + selected.chipFamily + "). Connect and install.";
       });
     })();
   </script>

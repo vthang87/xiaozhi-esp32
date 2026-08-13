@@ -1,9 +1,13 @@
 # Firmware binaries for ESP Web Tools.
-/firmware/*.bin
+/firmware/*/*.bin
   Content-Type: application/octet-stream
   Cache-Control: public, max-age=60
 
-/firmware/ready.json
+/firmware/*/ready.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=60
+
+/boards.json
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=60
 

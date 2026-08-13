@@ -1,6 +1,4 @@
 {
   "version": "2.0.5",
-  "board": "es3c28p",
-  "chipFamily": "ESP32-S3",
-  "firmware": "firmware/merged-binary.bin"
+  "firmware": "firmware/{board}/merged-binary.bin"
 }
