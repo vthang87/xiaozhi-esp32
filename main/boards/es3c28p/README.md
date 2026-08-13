@@ -27,23 +27,24 @@ python scripts/release.py es3c28p
 Flash from Chrome or Edge over USB with [ESP Web Tools](https://esphome.github.io/esp-web-tools/).
 The shared installer lives in [`web/installer/`](../../../web/installer/) and is
 served by the `xiaozhi-install` Worker ([`wrangler.jsonc`](../../../wrangler.jsonc)).
-It lists every board variant from `main/boards/*/config.json`, including this one.
+The installer currently lists only ES3C28P.
 
-ESP-IDF cannot build on Cloudflare. Add the Worker in the dashboard yourself;
-do not wire up an automatic deploy.
+ESP-IDF cannot build on Cloudflare. GitHub Actions compiles firmware with
+`espressif/idf:release-v5.5`, packs `web/installer`, and deploys the Worker.
 
-### One-time Cloudflare setup (dashboard)
+### One-time setup
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Connect to Git**.
-2. Project name: `xiaozhi-install` (must match `name` in `wrangler.jsonc`).
-3. Build command: leave empty.
-4. Deploy command: `npx wrangler deploy`.
-5. Click **Deploy**.
+1. Cloudflare dashboard → **Workers & Pages** → **Create** a Worker named
+   `xiaozhi-install` (must match `name` in `wrangler.jsonc`). Do not connect
+   Git on Cloudflare; that build cannot run ESP-IDF.
+2. GitHub repo → **Settings** → **Secrets and variables** → **Actions**:
+   - `CLOUDFLARE_API_TOKEN` (Account / Workers Scripts: Edit)
+   - `CLOUDFLARE_ACCOUNT_ID`
+3. Push to `main`, or run **Build Boards** → **Run workflow**. The installer
+   packs ES3C28P only.
 
-The installer UI is enough to flash a local `merged-binary.bin` for any selected
-board. Hosted firmware on the Worker is optional: after a local build, run
-`python scripts/prepare_installer.py es3c28p` (or another variant) and deploy
-again from a machine that has those `.bin` files (they stay gitignored).
+The workflow uploads a `xiaozhi-install` artifact on every run. Hosted
+`.bin` files stay gitignored and are attached only in CI.
 
 ### Local preview
 

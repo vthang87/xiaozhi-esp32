@@ -33,6 +33,17 @@ MERGED = BUILD / "merged-binary.bin"
 COMPILE_COMMANDS = BUILD / "compile_commands.json"
 THEME_BIN = BUILD / "storybook-garden.theme.bin"
 THEME_OFFSET = 0xF80000
+# Temporarily ship only ES3C28P in the web installer.
+INSTALLER_BOARDS = frozenset({"es3c28p"})
+BOARD_EXTRAS = {
+    "es3c28p": {
+        "title": "ES3C28P",
+        "image": "boards/es3c28p.png",
+        "docs": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+        "docsLabel": "LCDWiki 2.8-inch ESP32-S3 Display",
+        "summary": "2.8-inch IPS 240x320, capacitive touch, ES8311 audio, 16 MB flash",
+    },
+}
 
 CHIP_FAMILY = {
     "esp32": "ESP32",
@@ -117,8 +128,11 @@ def collect_boards() -> list[dict]:
             offset = theme_offset_for(build)
             if offset is not None:
                 entry["themeOffset"] = offset
+            extras = BOARD_EXTRAS.get(variant) or BOARD_EXTRAS.get(board_path.name)
+            if extras:
+                entry.update(extras)
             boards.append(entry)
-    return boards
+    return [b for b in boards if b["board"] in INSTALLER_BOARDS]
 
 
 def write_catalog(boards: list[dict], version: str) -> None:
@@ -268,7 +282,7 @@ def main() -> int:
     print()
     print("Local preview:")
     print("  python3 -m http.server 8080 --directory web/installer")
-    print("Cloudflare: add Worker xiaozhi-install in the dashboard.")
+    print("GitHub Actions packs web/installer after each board build.")
     return 0
 
 

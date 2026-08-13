@@ -1,8 +1,8 @@
 // Cloudflare Workers config — serves the XiaoZhi web installer as static assets.
-// Add Worker `xiaozhi-install` in the Cloudflare dashboard (Connect to Git).
-// Do not auto-deploy from CI. ESP-IDF cannot build on Cloudflare; copy firmware
-// with `python scripts/prepare_installer.py <variant>` if you want hosted .bin
-// files, or flash a local merged-binary.bin from the page.
+// Firmware is compiled by GitHub Actions (espressif/idf) then this Worker is
+// deployed with wrangler. Create Worker `xiaozhi-install` in the Cloudflare
+// dashboard once; do not use Cloudflare's Git build (it cannot run ESP-IDF).
+// Repo secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
 {
   "name": "xiaozhi-install",
   "compatibility_date": "2026-08-13",
