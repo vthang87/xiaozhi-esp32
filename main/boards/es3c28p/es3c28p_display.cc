@@ -1388,9 +1388,17 @@ void Es3c28pDisplay::SetChatMessage(const char* role, const char* content) {
     }
 }
 
+bool Es3c28pDisplay::SetTextFont(std::shared_ptr<LvglFont>) {
+    // The custom UI keeps built-in fonts. Replacing them with an assets CBIN
+    // font frees the old lv_font_t while labels still point at it, then
+    // LcdDisplay::SetTheme applies the new font to the whole screen and
+    // LVGL panics in the Wi-Fi textarea (InstrFetchProhibited).
+    return false;
+}
+
 void Es3c28pDisplay::SetTheme(Theme* theme) {
-    SpiLcdDisplay::SetTheme(theme);
     DisplayLockGuard lock(this);
+    Display::SetTheme(theme);
     ApplyMusicTheme();
     UpdateTabStyles();
 }
