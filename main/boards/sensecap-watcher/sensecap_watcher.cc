@@ -20,7 +20,6 @@
 #include <driver/spi_master.h>
 #include <driver/i2c_master.h>
 #include <driver/spi_common.h>
-#include <wifi_station.h>
 #include <iot_button.h>
 #include <iot_knob.h>
 #include <esp_io_expander_tca95xx_16bit.h>
@@ -46,7 +45,14 @@ class CustomLcdDisplay : public SpiLcdDisplay {
                         bool mirror_y,
                         bool swap_xy) 
             : SpiLcdDisplay(io_handle, panel_handle, width, height, offset_x, offset_y, mirror_x, mirror_y, swap_xy) {
-    
+            // Note: UI customization should be done in SetupUI(), not in constructor
+            // to ensure lvgl objects are created before accessing them
+        }
+
+        virtual void SetupUI() override {
+            // Call parent SetupUI() first to create all lvgl objects
+            SpiLcdDisplay::SetupUI();
+
             DisplayLockGuard lock(this);
             auto lvgl_theme = static_cast<LvglTheme*>(current_theme_);
             auto text_font = lvgl_theme->text_font()->font();
@@ -263,11 +269,13 @@ private:
         
         iot_button_register_cb(btns, BUTTON_SINGLE_CLICK, nullptr, [](void* button_handle, void* usr_data) {
             auto self = static_cast<SensecapWatcher*>(usr_data);
-            auto& app = Application::GetInstance();
-            if (app.GetDeviceState() == kDeviceStateStarting && !WifiStation::GetInstance().IsConnected()) {
-                self->ResetWifiConfiguration();
-            }
             self->power_save_timer_->WakeUp();
+
+            auto& app = Application::GetInstance();
+            if (app.GetDeviceState() == kDeviceStateStarting) {
+                self->EnterWifiConfigMode();
+                return;
+            }
             app.ToggleChatState();
         }, this);
         
@@ -326,7 +334,7 @@ private:
         ESP_LOGI(TAG, "Install panel IO");
         const esp_lcd_panel_io_spi_config_t io_config = {
             .cs_gpio_num = BSP_LCD_SPI_CS,
-            .dc_gpio_num = -1,
+            .dc_gpio_num = GPIO_NUM_NC,
             .spi_mode = 3,
             .pclk_hz = DRV_LCD_PIXEL_CLK_HZ,
             .trans_queue_depth = 2,
@@ -344,12 +352,11 @@ private:
         esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)BSP_LCD_SPI_NUM, &io_config, &panel_io_);
     
         ESP_LOGD(TAG, "Install LCD driver");
-        const esp_lcd_panel_dev_config_t panel_config = {
-            .reset_gpio_num = BSP_LCD_GPIO_RST, // Shared with Touch reset
-            .rgb_ele_order = DRV_LCD_RGB_ELEMENT_ORDER,
-            .bits_per_pixel = DRV_LCD_BITS_PER_PIXEL,
-            .vendor_config = &vendor_config,
-        };
+        esp_lcd_panel_dev_config_t panel_config = {};
+        panel_config.rgb_ele_order = DRV_LCD_RGB_ELEMENT_ORDER;
+        panel_config.bits_per_pixel = DRV_LCD_BITS_PER_PIXEL;
+        panel_config.reset_gpio_num = BSP_LCD_GPIO_RST; // Shared with Touch reset
+        panel_config.vendor_config = &vendor_config;
         esp_lcd_new_panel_spd2010(panel_io_, &panel_config, &panel_);
 
         esp_lcd_panel_reset(panel_);
@@ -625,11 +632,11 @@ public:
         return &led;
     }
 
-    virtual void SetPowerSaveMode(bool enabled) override {
-        if (!enabled) {
+    virtual void SetPowerSaveLevel(PowerSaveLevel level) override {
+        if (level != PowerSaveLevel::LOW_POWER) {
             power_save_timer_->WakeUp();
         }
-        WifiBoard::SetPowerSaveMode(enabled);
+        WifiBoard::SetPowerSaveLevel(level);
     }
 
     virtual bool GetBatteryLevel(int &level, bool& charging, bool& discharging) override {

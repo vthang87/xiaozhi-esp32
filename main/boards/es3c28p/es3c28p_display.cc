@@ -8,12 +8,12 @@
 #include "theme_package.h"
 #include "wifi_board.h"
 
-#include <font_awesome.h>
+#include <material_symbols.h>
 
-LV_FONT_DECLARE(font_awesome_14_1);
+LV_FONT_DECLARE(font_material_symbols_14_1);
 #include <esp_wifi.h>
 #include <ssid_manager.h>
-#include <wifi_station.h>
+#include <wifi_manager.h>
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -97,7 +97,7 @@ void CreateBatteryIndicator(lv_obj_t* parent, const lv_font_t* icon_font,
 
     *icon = lv_label_create(indicator);
     lv_obj_set_size(*icon, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_label_set_text(*icon, FONT_AWESOME_BATTERY_FULL);
+    lv_label_set_text(*icon, MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_FULL);
     StyleLabel(*icon, icon_font, kCyanColor, LV_TEXT_ALIGN_CENTER);
 
     *percentage = lv_label_create(indicator);
@@ -110,8 +110,8 @@ lv_obj_t* CreateWifiIndicator(lv_obj_t* parent) {
     auto* icon = lv_label_create(parent);
     lv_obj_set_pos(icon, 140, 2);
     lv_obj_set_size(icon, 20, 20);
-    lv_label_set_text(icon, FONT_AWESOME_WIFI_SLASH);
-    StyleLabel(icon, &font_awesome_14_1, kMutedColor, LV_TEXT_ALIGN_CENTER);
+    lv_label_set_text(icon, MATERIAL_SYMBOLS_WIFI_OFF);
+    StyleLabel(icon, &font_material_symbols_14_1, kMutedColor, LV_TEXT_ALIGN_CENTER);
     lv_obj_set_style_text_opa(icon, LV_OPA_COVER, 0);
     lv_obj_add_flag(icon, LV_OBJ_FLAG_CLICKABLE);
     return icon;
@@ -310,7 +310,7 @@ void Es3c28pDisplay::SetupStorybookUi() {
     lv_obj_add_event_cb(chat_mic_button_, OnChatMicClicked,
         LV_EVENT_CLICKED, this);
     chat_mic_icon_ = lv_label_create(chat_mic_button_);
-    lv_label_set_text(chat_mic_icon_, FONT_AWESOME_MICROPHONE);
+    lv_label_set_text(chat_mic_icon_, MATERIAL_SYMBOLS_MIC);
     StyleLabel(chat_mic_icon_, theme->large_icon_font()->font(), kTextColor,
         LV_TEXT_ALIGN_CENTER);
     lv_obj_center(chat_mic_icon_);
@@ -326,7 +326,7 @@ void Es3c28pDisplay::SetupStorybookUi() {
     lv_obj_set_style_border_width(album, 2, 0);
     lv_obj_set_style_border_color(album, lv_color_hex(kLineColor), 0);
     auto* album_icon = lv_label_create(album);
-    lv_label_set_text(album_icon, FONT_AWESOME_MUSIC);
+    lv_label_set_text(album_icon, MATERIAL_SYMBOLS_MUSIC_NOTE);
     StyleLabel(album_icon, theme->large_icon_font()->font(), kTextColor,
         LV_TEXT_ALIGN_CENTER);
     lv_obj_center(album_icon);
@@ -390,8 +390,8 @@ void Es3c28pDisplay::SetupStorybookUi() {
     lv_obj_set_style_bg_color(music_progress_bar_, lv_color_hex(kHighlightColor),
         LV_PART_INDICATOR);
 
-    const char* controls[] = {FONT_AWESOME_BACKWARD_STEP,
-        FONT_AWESOME_PLAY, FONT_AWESOME_FORWARD_STEP};
+    const char* controls[] = {MATERIAL_SYMBOLS_SKIP_PREVIOUS,
+        MATERIAL_SYMBOLS_PLAY_ARROW, MATERIAL_SYMBOLS_SKIP_NEXT};
     lv_event_cb_t callbacks[] = {OnPreviousClicked, OnPlayClicked,
         OnNextClicked};
     for (int i = 0; i < 3; ++i) {
@@ -584,7 +584,7 @@ void Es3c28pDisplay::SetupWifiInfoUi() {
     auto* wifi_icon = lv_label_create(wifi_info_page_);
     lv_obj_set_pos(wifi_icon, 15, 51);
     lv_obj_set_size(wifi_icon, 48, 42);
-    lv_label_set_text(wifi_icon, FONT_AWESOME_WIFI);
+    lv_label_set_text(wifi_icon, MATERIAL_SYMBOLS_WIFI);
     StyleLabel(wifi_icon, theme->large_icon_font()->font(), kCyanColor,
         LV_TEXT_ALIGN_CENTER);
 
@@ -773,7 +773,7 @@ void Es3c28pDisplay::SetupMusicUi() {
         0);
     lv_obj_set_style_text_color(chat_mic_icon_,
         lv_color_hex(kKidsTheme ? kTextColor : kScreenColor), 0);
-    lv_label_set_text(chat_mic_icon_, FONT_AWESOME_MICROPHONE);
+    lv_label_set_text(chat_mic_icon_, MATERIAL_SYMBOLS_MIC);
     lv_obj_center(chat_mic_icon_);
 
     music_page_ = lv_obj_create(screen);
@@ -881,9 +881,9 @@ void Es3c28pDisplay::SetupMusicUi() {
     StyleLabel(music_total_label_, small_font, kMutedColor, LV_TEXT_ALIGN_RIGHT);
 
     const char* icons[] = {
-        FONT_AWESOME_BACKWARD_STEP,
-        FONT_AWESOME_PLAY,
-        FONT_AWESOME_FORWARD_STEP,
+        MATERIAL_SYMBOLS_SKIP_PREVIOUS,
+        MATERIAL_SYMBOLS_PLAY_ARROW,
+        MATERIAL_SYMBOLS_SKIP_NEXT,
     };
     lv_event_cb_t callbacks[] = {
         OnPreviousClicked,
@@ -1151,14 +1151,14 @@ void Es3c28pDisplay::ShowWifiInfo() {
     if (wifi_info_page_ == nullptr) {
         return;
     }
-    auto& station = WifiStation::GetInstance();
-    const bool connected = station.IsConnected();
-    const std::string ssid = connected ? station.GetSsid() : "Not connected";
-    const std::string ip = connected ? station.GetIpAddress() : "No IP address";
+    auto& wifi = WifiManager::GetInstance();
+    const bool connected = wifi.IsConnected();
+    const std::string ssid = connected ? wifi.GetSsid() : "Not connected";
+    const std::string ip = connected ? wifi.GetIpAddress() : "No IP address";
     char signal[24];
     if (connected) {
         snprintf(signal, sizeof(signal), "%d dBm",
-            static_cast<int>(station.GetRssi()));
+            static_cast<int>(wifi.GetRssi()));
     } else {
         snprintf(signal, sizeof(signal), "Unavailable");
     }
@@ -1337,7 +1337,7 @@ void Es3c28pDisplay::SetMusicInfo(const char* state, const char* track,
     lv_label_set_text(music_track_index_label_, index_text);
     lv_label_set_text(music_track_meta_label_, meta_text);
     lv_label_set_text(music_play_icon_,
-        playing ? FONT_AWESOME_PAUSE : FONT_AWESOME_PLAY);
+        playing ? MATERIAL_SYMBOLS_PAUSE : MATERIAL_SYMBOLS_PLAY_ARROW);
 }
 
 void Es3c28pDisplay::SetMusicProgress(uint32_t elapsed_seconds,
@@ -1388,9 +1388,17 @@ void Es3c28pDisplay::SetChatMessage(const char* role, const char* content) {
     }
 }
 
+bool Es3c28pDisplay::SetTextFont(std::shared_ptr<LvglFont>) {
+    // The custom UI keeps built-in fonts. Replacing them with an assets CBIN
+    // font frees the old lv_font_t while labels still point at it, then
+    // LcdDisplay::SetTheme applies the new font to the whole screen and
+    // LVGL panics in the Wi-Fi textarea (InstrFetchProhibited).
+    return false;
+}
+
 void Es3c28pDisplay::SetTheme(Theme* theme) {
-    SpiLcdDisplay::SetTheme(theme);
     DisplayLockGuard lock(this);
+    Display::SetTheme(theme);
     ApplyMusicTheme();
     UpdateTabStyles();
 }
@@ -1403,7 +1411,7 @@ void Es3c28pDisplay::UpdateStatusBar(bool update_all) {
     const char* network_icon = Board::GetInstance().GetNetworkStateIcon();
     const std::string network_icon_text =
         network_icon != nullptr && network_icon[0] != '\0'
-            ? network_icon : FONT_AWESOME_WIFI_SLASH;
+            ? network_icon : MATERIAL_SYMBOLS_WIFI_OFF;
     int battery = -1;
     bool charging = false;
     bool discharging = false;
@@ -1441,7 +1449,7 @@ void Es3c28pDisplay::UpdateStatusBar(bool update_all) {
 
     if (update_all || network_icon_text != displayed_network_icon_) {
         displayed_network_icon_ = network_icon_text;
-        const bool connected = network_icon_text != FONT_AWESOME_WIFI_SLASH;
+        const bool connected = network_icon_text != MATERIAL_SYMBOLS_WIFI_OFF;
         lv_obj_t* wifi_icons[] = {
             chat_wifi_icon_, music_wifi_icon_, browser_wifi_icon_};
         for (auto* icon : wifi_icons) {
@@ -1463,17 +1471,17 @@ void Es3c28pDisplay::UpdateStatusBar(bool update_all) {
         displayed_battery_ = battery;
         displayed_charging_ = charging;
 
-        const char* battery_icon = FONT_AWESOME_BATTERY_FULL;
+        const char* battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_FULL;
         if (charging) {
-            battery_icon = FONT_AWESOME_BATTERY_BOLT;
+            battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_BOLT;
         } else if (battery < 20) {
-            battery_icon = FONT_AWESOME_BATTERY_EMPTY;
+            battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_0;
         } else if (battery < 40) {
-            battery_icon = FONT_AWESOME_BATTERY_QUARTER;
+            battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_2;
         } else if (battery < 60) {
-            battery_icon = FONT_AWESOME_BATTERY_HALF;
+            battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_4;
         } else if (battery < 80) {
-            battery_icon = FONT_AWESOME_BATTERY_THREE_QUARTERS;
+            battery_icon = MATERIAL_SYMBOLS_BATTERY_ANDROID_FRAME_6;
         }
 
         char battery_text[8];
@@ -1556,7 +1564,7 @@ void Es3c28pDisplay::UpdateStatusBar(bool update_all) {
             lv_label_set_text(chat_voice_hint_label_, voice_hint);
         }
         lv_label_set_text(chat_mic_icon_, active
-            ? FONT_AWESOME_MICROPHONE_SLASH : FONT_AWESOME_MICROPHONE);
+            ? MATERIAL_SYMBOLS_MIC_OFF : MATERIAL_SYMBOLS_MIC);
         lv_obj_set_style_bg_color(chat_mic_button_,
             lv_color_hex(active ? kPanelColor : kAmberColor), 0);
         lv_obj_set_style_border_color(chat_mic_button_,
@@ -1667,7 +1675,7 @@ void Es3c28pDisplay::OnWifiResetClicked(lv_event_t* event) {
     lv_label_set_text(display->wifi_reset_label_, "RESTARTING...");
     lv_obj_add_state(display->wifi_reset_button_, LV_STATE_DISABLED);
     xTaskCreate([](void*) {
-        static_cast<WifiBoard&>(Board::GetInstance()).ResetWifiConfiguration();
+        static_cast<WifiBoard&>(Board::GetInstance()).EnterWifiConfigMode();
         vTaskDelete(nullptr);
     }, "wifi_ui_reset", 3072, nullptr, 4, nullptr);
 }

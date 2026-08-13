@@ -28,6 +28,7 @@ public:
     void SetBrowserEntries(const std::string& path,
         const std::vector<std::string>& names, const std::vector<bool>& directories);
     void SetChatMessage(const char* role, const char* content) override;
+    bool SetTextFont(std::shared_ptr<LvglFont> text_font) override;
     void SetTheme(Theme* theme) override;
     void UpdateStatusBar(bool update_all = false) override;
 

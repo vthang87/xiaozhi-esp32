@@ -19,7 +19,7 @@ The pin assignments are based on the manufacturer's
 ## Build
 
 ```bash
-python scripts/release.py es3c28p
+python scripts/build.py es3c28p
 ```
 
 ## Web install (Cloudflare Worker)
@@ -30,7 +30,7 @@ served by the `xiaozhi-install` Worker ([`wrangler.jsonc`](../../../wrangler.jso
 The installer currently lists only ES3C28P.
 
 ESP-IDF cannot build on Cloudflare. GitHub Actions compiles firmware with
-`espressif/idf:release-v5.5`, packs `web/installer`, and deploys the Worker.
+`espressif/idf:v6.0.2`, packs `web/installer`, and deploys the Worker.
 
 ### One-time setup
 
@@ -49,7 +49,7 @@ The workflow uploads a `xiaozhi-install` artifact on every run. Hosted
 ### Local preview
 
 ```bash
-python scripts/release.py es3c28p
+python scripts/build.py es3c28p
 python scripts/prepare_installer.py es3c28p
 python3 -m http.server 8080 --directory web/installer
 ```
