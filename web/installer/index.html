@@ -78,6 +78,32 @@
     }
     .picker.single input[type="search"] { display: none; }
     .picker.single select { min-height: 0; height: auto; }
+    .board-photo {
+      display: none;
+      margin-top: 12px;
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      background: var(--paper);
+      border: 2px solid var(--line);
+      border-radius: 12px;
+    }
+    .board-photo.show { display: block; }
+    .board-summary {
+      display: none;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+    .board-summary.show { display: block; }
+    .board-docs {
+      display: none;
+      margin-top: 8px;
+      font-weight: 800;
+      word-break: break-word;
+    }
+    .board-docs.show { display: inline-block; }
     .chip {
       margin-top: 10px;
       color: var(--muted);
@@ -253,6 +279,9 @@
         <label for="board-filter">Board</label>
         <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
         <select id="board-select" size="1" aria-label="Board list"></select>
+        <img id="board-photo" class="board-photo" alt="" />
+        <p id="board-summary" class="board-summary"></p>
+        <a id="board-docs" class="board-docs" href="#" target="_blank" rel="noopener noreferrer"></a>
         <p class="chip">Chip <strong id="chip-label">-</strong> · <span id="board-count">0</span> variants</p>
       </div>
     </header>
@@ -323,6 +352,9 @@
       const filterEl = document.getElementById("board-filter");
       const selectEl = document.getElementById("board-select");
       const themeMode = document.getElementById("theme-mode");
+      const photoEl = document.getElementById("board-photo");
+      const summaryEl = document.getElementById("board-summary");
+      const docsEl = document.getElementById("board-docs");
       const fileInput = document.getElementById("local-file");
       const fileName = document.getElementById("file-name");
       const useLocal = document.getElementById("use-local");
@@ -388,6 +420,31 @@
         themeMode.classList.toggle("hidden", !board.themeOffset);
         if (!board.themeOffset) {
           document.querySelector('input[name="kind"][value="firmware"]').checked = true;
+        }
+        if (board.image) {
+          photoEl.src = board.image;
+          photoEl.alt = board.title;
+          photoEl.classList.add("show");
+        } else {
+          photoEl.removeAttribute("src");
+          photoEl.alt = "";
+          photoEl.classList.remove("show");
+        }
+        if (board.summary) {
+          summaryEl.textContent = board.summary;
+          summaryEl.classList.add("show");
+        } else {
+          summaryEl.textContent = "";
+          summaryEl.classList.remove("show");
+        }
+        if (board.docs) {
+          docsEl.href = board.docs;
+          docsEl.textContent = board.docsLabel || board.docs;
+          docsEl.classList.add("show");
+        } else {
+          docsEl.removeAttribute("href");
+          docsEl.textContent = "";
+          docsEl.classList.remove("show");
         }
         const url = new URL(window.location.href);
         url.searchParams.set("board", board.id);

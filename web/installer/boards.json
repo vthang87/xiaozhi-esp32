@@ -7,11 +7,15 @@
       "id": "es3c28p",
       "board": "es3c28p",
       "name": "es3c28p",
-      "title": "LCDWiki ES3C28P",
+      "title": "ES3C28P",
       "target": "esp32s3",
       "chipFamily": "ESP32-S3",
       "firmware": "firmware/es3c28p/merged-binary.bin",
-      "themeOffset": 16252928
+      "themeOffset": 16252928,
+      "image": "boards/es3c28p.png",
+      "docs": "https://www.lcdwiki.com/2.8inch_ESP32-S3_Display",
+      "docsLabel": "LCDWiki 2.8-inch ESP32-S3 Display",
+      "summary": "2.8-inch IPS 240x320, capacitive touch, ES8311 audio, 16 MB flash"
     }
   ]
 }
