@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Studio Precision — ESP32 Music Player</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --screen: #17191b;
+      --panel: #222528;
+      --line: #383d41;
+      --text: #f4f1e9;
+      --muted: #999fa2;
+      --amber: #f0b84a;
+      --cyan: #69c8cf;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #0d0e0f;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .device {
+      width: 320px;
+      height: 240px;
+      position: relative;
+      overflow: hidden;
+      background: var(--screen);
+      border: 1px solid #42474a;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
+      transform: scale(2.5);
+      transform-origin: center;
+    }
+
+    .status {
+      height: 23px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+    }
+
+    .status-left, .status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sd-mark {
+      padding: 2px 4px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      color: var(--cyan);
+    }
+
+    .speaker {
+      width: 11px;
+      height: 11px;
+      display: block;
+      color: var(--text);
+    }
+
+    .content {
+      height: 187px;
+      padding: 9px 11px 8px;
+      display: grid;
+      grid-template-rows: 24px 45px 34px 48px;
+      row-gap: 5px;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      color: var(--amber);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .browse {
+      height: 24px;
+      padding: 0 9px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--panel);
+      color: var(--text);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+
+    .folder {
+      width: 10px;
+      height: 8px;
+      border: 1px solid var(--cyan);
+      border-radius: 1px;
+      position: relative;
+    }
+
+    .folder::before {
+      content: "";
+      width: 5px;
+      height: 2px;
+      position: absolute;
+      top: -3px;
+      left: 0;
+      border: 1px solid var(--cyan);
+      border-bottom: 0;
+      border-radius: 1px 1px 0 0;
+    }
+
+    .track {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+    }
+
+    .track-index {
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--cyan);
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .track-copy { min-width: 0; }
+
+    .track-name {
+      overflow: hidden;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 19px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .track-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) 36px;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .time {
+      color: var(--text);
+      font-family: "Courier New", monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .time:last-child {
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .progress {
+      height: 18px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      position: relative;
+      background: var(--line);
+    }
+
+    .progress-fill {
+      width: 43%;
+      height: 3px;
+      background: var(--amber);
+    }
+
+    .progress-head {
+      width: 7px;
+      height: 7px;
+      position: absolute;
+      top: -2px;
+      left: calc(43% - 3px);
+      border: 1px solid var(--screen);
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .ticks {
+      position: absolute;
+      inset: 8px 0 auto;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .ticks i {
+      width: 1px;
+      height: 3px;
+      display: block;
+      background: var(--line);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 56px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font: inherit;
+    }
+
+    .control {
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .control svg { width: 15px; height: 15px; }
+
+    .control.play {
+      width: 56px;
+      height: 46px;
+      justify-self: center;
+      border-color: var(--amber);
+      background: var(--amber);
+      color: #161719;
+    }
+
+    .control.play svg { width: 20px; height: 20px; }
+
+    .nav {
+      height: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--line);
+      background: #121416;
+    }
+
+    .tab {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #777d80;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .tab + .tab { border-left: 1px solid var(--line); }
+
+    .tab.active { color: var(--text); }
+
+    .tab.active::after {
+      content: "";
+      width: 36px;
+      height: 2px;
+      position: absolute;
+      bottom: 0;
+      left: calc(50% - 18px);
+      background: var(--amber);
+    }
+
+    .tab svg { width: 12px; height: 12px; }
+
+    @media (max-width: 850px), (max-height: 650px) {
+      .device { transform: scale(1.8); }
+    }
+
+    @media (max-width: 620px), (max-height: 470px) {
+      .device { transform: scale(1.25); }
+    }
+  </style>
+</head>
+<body>
+  <main class="device" aria-label="Studio Precision music player concept">
+    <header class="status">
+      <div class="status-left">
+        <span class="sd-mark">SD</span>
+        <span>Player</span>
+      </div>
+      <div class="status-right">
+        <svg class="speaker" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 6h3l4-3v10l-4-3H2z" fill="currentColor"/>
+          <path d="M11 6c1 1.2 1 2.8 0 4M13 4c2.1 2.2 2.1 5.8 0 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span>72%</span>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="topline">
+        <div class="eyebrow">Now playing</div>
+        <button class="browse" type="button"><span class="folder"></span>Browse</button>
+      </div>
+
+      <div class="track">
+        <div class="track-index">03</div>
+        <div class="track-copy">
+          <div class="track-name">Acoustic Session.mp3</div>
+          <div class="track-meta">Track 03 / 14 · SD Music</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <span class="time">01:42</span>
+        <div class="progress">
+          <div class="progress-track">
+            <div class="progress-fill"></div>
+            <div class="progress-head"></div>
+          </div>
+          <div class="ticks" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+        </div>
+        <span class="time">03:58</span>
+      </div>
+
+      <div class="controls">
+        <button class="control" type="button" aria-label="Previous track">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M4 4h2v12H4zM16 4v12L7 10z"/>
+          </svg>
+        </button>
+        <button class="control play" type="button" aria-label="Pause">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M4.5 3h4v14h-4zM11.5 3h4v14h-4z"/>
+          </svg>
+        </button>
+        <button class="control" type="button" aria-label="Next track">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M14 4h2v12h-2zM4 4v12l9-6z"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+
+    <nav class="nav" aria-label="Primary">
+      <div class="tab">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 3.5h12v8H7l-3.5 2v-2H2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        AI Chat
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="5" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="12" cy="10.5" r="2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M7 12V4l7-1.5v8" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        Music
+      </div>
+    </nav>
+  </main>
+</body>
+</html>

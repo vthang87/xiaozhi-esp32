@@ -441,9 +441,24 @@ choice BOARD_TYPE
     config BOARD_TYPE_AIPI_LITE
         bool "AIPI-Lite"
         depends on IDF_TARGET_ESP32S3
+    config BOARD_TYPE_ES3C28P
+        bool "LCDWiki ES3C28P 2.8-inch"
+        depends on IDF_TARGET_ESP32S3
     config BOARD_TYPE_HU_087
         bool "HU-087"
         depends on IDF_TARGET_ESP32S3
+endchoice
+
+choice ES3C28P_DEFAULT_THEME
+    depends on BOARD_TYPE_ES3C28P
+    prompt "ES3C28P built-in fallback theme"
+    default ES3C28P_DEFAULT_THEME_STUDIO_PRECISION
+
+    config ES3C28P_DEFAULT_THEME_STUDIO_PRECISION
+        bool "Studio Precision"
+
+    config ES3C28P_DEFAULT_THEME_STORYBOOK_GARDEN
+        bool "Storybook Garden (Kids)"
 endchoice
 
 choice

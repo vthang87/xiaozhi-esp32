@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Install XiaoZhi</title>
+  <style>
+    :root {
+      --paper: #f7edcf;
+      --cream: #fffaf0;
+      --ink: #24423d;
+      --muted: #57716b;
+      --line: #31534c;
+      --coral: #ef765f;
+      --gold: #f5c84e;
+      --sky: #8fd6da;
+      --hill: #78bd76;
+      --page: #b9d5cf;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100dvh;
+      color: var(--ink);
+      background: var(--page);
+      font-family: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
+    }
+    a { color: var(--line); }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin: 0 0 10px;
+    }
+    .lede {
+      margin: 0;
+      max-width: 36rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.45;
+    }
+    .picker {
+      background: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--line);
+      padding: 16px;
+    }
+    .picker label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+    .picker input[type="search"],
+    .picker select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      color: var(--ink);
+      font: inherit;
+    }
+    .picker select { margin-top: 8px; min-height: 168px; }
+    .chip {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .chip strong { color: var(--ink); }
+    .panel {
+      background: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--line);
+      padding: 22px;
+    }
+    .panel + .panel { margin-top: 20px; }
+    h2 {
+      margin: 0 0 6px;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .meta { color: var(--muted); line-height: 1.5; }
+    .meta strong { color: var(--ink); }
+    button, .file-btn {
+      appearance: none;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 20px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--line);
+    }
+    button:active, .file-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 0 var(--line);
+    }
+    button.primary {
+      background: var(--line);
+      color: var(--cream);
+    }
+    .file-btn {
+      background: var(--gold);
+      color: var(--ink);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    esp-web-install-button { display: inline-block; }
+    esp-web-install-button::part(button) {
+      background: var(--line);
+      color: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      padding: 11px 20px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--line);
+    }
+    .unsupported {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--gold);
+      color: var(--ink);
+      line-height: 1.4;
+    }
+    .steps {
+      list-style: none;
+      margin: 20px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+    .steps li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      align-items: start;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .steps span {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--sky);
+      border: 2px solid var(--line);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--ink);
+    }
+    .note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #d9f0e7;
+      border: 2px solid var(--line);
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .file-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .file-name { color: var(--muted); }
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 16px;
+    }
+    .modes label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      cursor: pointer;
+    }
+    .modes input { accent-color: var(--line); }
+    .hidden { display: none; }
+    footer {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    code {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+    }
+    @media (max-width: 767px) {
+      .hero, .modes { grid-template-columns: 1fr; }
+      .picker select { min-height: 120px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      button:active, .file-btn:active { transform: none; }
+    }
+  </style>
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>Install XiaoZhi</h1>
+        <p class="lede">Pick a board, then flash firmware from Chrome or Edge over USB.</p>
+      </div>
+      <div class="picker">
+        <label for="board-filter">Board</label>
+        <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
+        <select id="board-select" size="8" aria-label="Board list"></select>
+        <p class="chip">Chip <strong id="chip-label">-</strong> · <span id="board-count">0</span> variants</p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="row">
+        <div class="meta">
+          Firmware <strong id="fw-version">-</strong><br />
+          Target <strong id="board-label">-</strong>
+        </div>
+        <esp-web-install-button id="install-btn" manifest="./manifest.json">
+          <button slot="activate" class="primary">Connect and install</button>
+          <span slot="unsupported" class="unsupported" style="display:block">
+            Web Serial is not available here. Open this page in Chrome or Edge on a desktop computer.
+          </span>
+        </esp-web-install-button>
+      </div>
+      <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Loading board list…</p>
+      <ol class="steps">
+        <li><span>1</span><div>Select the exact board variant. A mismatched image can leave the device unbootable.</div></li>
+        <li><span>2</span><div>Plug the board into USB. Hold <strong>BOOT</strong> if the serial port does not appear.</div></li>
+        <li><span>3</span><div>Click <strong>Connect and install</strong>, pick the port, and allow erase on first install. Press RESET when it finishes.</div></li>
+      </ol>
+      <div class="note">
+        Hosted images are optional. If this Worker has no <code>.bin</code> for the selected board, choose a local
+        <code>merged-binary.bin</code> from <code>python scripts/release.py &lt;board&gt;</code>.
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Install a file from this computer</h2>
+      <p class="sub">The selected board sets the chip family. Theme packages are only offered for boards that have a theme partition.</p>
+      <div class="modes">
+        <label>
+          <input type="radio" name="kind" value="firmware" checked />
+          <span>Full firmware (<code>merged-binary.bin</code>, offset 0)</span>
+        </label>
+        <label id="theme-mode" class="hidden">
+          <input type="radio" name="kind" value="theme" />
+          <span>Theme package (<code>.theme.bin</code>)</span>
+        </label>
+      </div>
+      <div class="file-row">
+        <label class="file-btn">
+          Choose file
+          <input id="local-file" type="file" accept=".bin,.theme.bin" hidden />
+        </label>
+        <span class="file-name" id="file-name">No file selected</span>
+        <button class="primary" id="use-local" type="button" disabled>Use this file</button>
+      </div>
+    </section>
+
+    <footer>
+      Prepare hosted bins with <code>python scripts/prepare_installer.py &lt;variant&gt;</code>, then add Worker
+      <code>xiaozhi-install</code> in the Cloudflare dashboard. Local preview:
+      <code>python3 -m http.server 8080 --directory web/installer</code>
+    </footer>
+  </main>
+  <script>
+    (function () {
+      const installBtn = document.getElementById("install-btn");
+      const versionEl = document.getElementById("fw-version");
+      const boardLabel = document.getElementById("board-label");
+      const chipLabel = document.getElementById("chip-label");
+      const boardCount = document.getElementById("board-count");
+      const hostStatus = document.getElementById("host-status");
+      const filterEl = document.getElementById("board-filter");
+      const selectEl = document.getElementById("board-select");
+      const themeMode = document.getElementById("theme-mode");
+      const fileInput = document.getElementById("local-file");
+      const fileName = document.getElementById("file-name");
+      const useLocal = document.getElementById("use-local");
+      let boards = [];
+      let selected = null;
+      let catalogVersion = "";
+      let objectUrls = [];
+      let selectedFile = null;
+      let boardRequest = 0;
+
+      function revokeAll() {
+        objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        objectUrls = [];
+      }
+
+      function blobUrl(blob) {
+        const url = URL.createObjectURL(blob);
+        objectUrls.push(url);
+        return url;
+      }
+
+      function applyManifest(manifest) {
+        installBtn.manifest = blobUrl(new Blob([JSON.stringify(manifest)], { type: "application/json" }));
+      }
+
+      function buildManifest(name, version, chipFamily, parts, erase) {
+        return {
+          name: name,
+          version: version,
+          new_install_prompt_erase: erase,
+          builds: [{ chipFamily: chipFamily, parts: parts }],
+        };
+      }
+
+      function filteredBoards() {
+        const q = filterEl.value.trim().toLowerCase();
+        if (!q) return boards;
+        return boards.filter((b) =>
+          [b.id, b.board, b.name, b.title, b.chipFamily].join(" ").toLowerCase().includes(q)
+        );
+      }
+
+      function renderSelect() {
+        const list = filteredBoards();
+        const keep = selected && list.some((b) => b.id === selected.id) ? selected.id : (list[0] && list[0].id);
+        selectEl.innerHTML = "";
+        list.forEach((b) => {
+          const opt = document.createElement("option");
+          opt.value = b.id;
+          opt.textContent = b.title + " · " + b.chipFamily;
+          selectEl.appendChild(opt);
+        });
+        if (keep) selectEl.value = keep;
+        const next = boards.find((b) => b.id === selectEl.value) || null;
+        if (next && (!selected || selected.id !== next.id)) setBoard(next);
+      }
+
+      function setBoard(board) {
+        selected = board;
+        boardLabel.textContent = board.title;
+        chipLabel.textContent = board.chipFamily;
+        versionEl.textContent = catalogVersion || "-";
+        themeMode.classList.toggle("hidden", !board.themeOffset);
+        if (!board.themeOffset) {
+          document.querySelector('input[name="kind"][value="firmware"]').checked = true;
+        }
+        const url = new URL(window.location.href);
+        url.searchParams.set("board", board.id);
+        history.replaceState(null, "", url);
+        revokeAll();
+        const req = ++boardRequest;
+        hostStatus.textContent = "Checking hosted firmware for " + board.id + "…";
+        fetch("./firmware/" + encodeURIComponent(board.id) + "/ready.json")
+          .then((r) => (r.ok ? r.json() : Promise.reject()))
+          .then((ready) => {
+            if (req !== boardRequest) return;
+            if (ready.version) versionEl.textContent = ready.version;
+            const parts = ready.parts && ready.parts.length
+              ? ready.parts
+              : [{ path: board.firmware, offset: 0 }];
+            applyManifest(buildManifest("XiaoZhi " + board.id, ready.version || catalogVersion, ready.chipFamily || board.chipFamily, parts, true));
+            hostStatus.textContent = "Hosted firmware is ready for " + board.title + ". Connect the board and install.";
+          })
+          .catch(() => {
+            if (req !== boardRequest) return;
+            applyManifest(buildManifest("XiaoZhi " + board.id, catalogVersion || "local", board.chipFamily, [{ path: board.firmware, offset: 0 }], true));
+            hostStatus.textContent =
+              "No hosted firmware for " + board.id + " yet. Choose a local merged-binary.bin below, then click Use this file.";
+          });
+      }
+
+      fetch("./boards.json")
+        .then((r) => r.json())
+        .then((catalog) => {
+          boards = catalog.boards || [];
+          catalogVersion = catalog.version || "";
+          boardCount.textContent = String(boards.length);
+          const wanted = new URLSearchParams(window.location.search).get("board");
+          const initial = boards.find((b) => b.id === wanted) || boards.find((b) => b.id === "es3c28p") || boards[0] || null;
+          selected = initial;
+          renderSelect();
+          if (initial) setBoard(initial);
+        })
+        .catch(() => {
+          hostStatus.textContent = "Could not load boards.json. Serve this folder over HTTP and retry.";
+        });
+
+      filterEl.addEventListener("input", renderSelect);
+      selectEl.addEventListener("change", () => {
+        const next = boards.find((b) => b.id === selectEl.value);
+        if (next) setBoard(next);
+      });
+
+      fileInput.addEventListener("change", () => {
+        selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        fileName.textContent = selectedFile ? selectedFile.name : "No file selected";
+        useLocal.disabled = !selectedFile;
+        if (selectedFile && /theme/i.test(selectedFile.name) && selected && selected.themeOffset) {
+          document.querySelector('input[name="kind"][value="theme"]').checked = true;
+        }
+      });
+
+      useLocal.addEventListener("click", () => {
+        if (!selectedFile || !selected) return;
+        const kind = document.querySelector('input[name="kind"]:checked').value;
+        if (kind === "theme" && !selected.themeOffset) {
+          hostStatus.textContent = "This board has no theme partition.";
+          return;
+        }
+        revokeAll();
+        const fileUrl = blobUrl(selectedFile);
+        const parts = kind === "theme"
+          ? [{ path: fileUrl, offset: selected.themeOffset }]
+          : [{ path: fileUrl, offset: 0 }];
+        applyManifest(buildManifest(
+          "XiaoZhi " + selected.id,
+          selectedFile.name,
+          selected.chipFamily,
+          parts,
+          kind !== "theme"
+        ));
+        hostStatus.textContent = kind === "theme"
+          ? "Theme file selected for " + selected.title + ". Connect and install to write the theme partition only."
+          : "Local firmware selected for " + selected.title + " (" + selected.chipFamily + "). Connect and install.";
+      });
+    })();
+  </script>
+</body>
+</html>
