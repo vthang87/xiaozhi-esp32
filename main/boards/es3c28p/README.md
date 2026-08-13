@@ -27,7 +27,7 @@ python scripts/release.py es3c28p
 Flash from Chrome or Edge over USB with [ESP Web Tools](https://esphome.github.io/esp-web-tools/).
 The shared installer lives in [`web/installer/`](../../../web/installer/) and is
 served by the `xiaozhi-install` Worker ([`wrangler.jsonc`](../../../wrangler.jsonc)).
-It lists every board variant from `main/boards/*/config.json`, including this one.
+The installer currently lists only ES3C28P.
 
 ESP-IDF cannot build on Cloudflare. GitHub Actions compiles firmware with
 `espressif/idf:release-v5.5`, packs `web/installer`, and deploys the Worker.
@@ -40,8 +40,8 @@ ESP-IDF cannot build on Cloudflare. GitHub Actions compiles firmware with
 2. GitHub repo → **Settings** → **Secrets and variables** → **Actions**:
    - `CLOUDFLARE_API_TOKEN` (Account / Workers Scripts: Edit)
    - `CLOUDFLARE_ACCOUNT_ID`
-3. Push to `main`, or run **Build Boards** → **Run workflow**. Default board
-   is `es3c28p`; use `all` to compile every variant.
+3. Push to `main`, or run **Build Boards** → **Run workflow**. The installer
+   packs ES3C28P only.
 
 The workflow uploads a `xiaozhi-install` artifact on every run. Hosted
 `.bin` files stay gitignored and are attached only in CI.

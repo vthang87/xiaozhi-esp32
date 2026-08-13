@@ -33,6 +33,8 @@ MERGED = BUILD / "merged-binary.bin"
 COMPILE_COMMANDS = BUILD / "compile_commands.json"
 THEME_BIN = BUILD / "storybook-garden.theme.bin"
 THEME_OFFSET = 0xF80000
+# Temporarily ship only ES3C28P in the web installer.
+INSTALLER_BOARDS = frozenset({"es3c28p"})
 
 CHIP_FAMILY = {
     "esp32": "ESP32",
@@ -118,7 +120,7 @@ def collect_boards() -> list[dict]:
             if offset is not None:
                 entry["themeOffset"] = offset
             boards.append(entry)
-    return boards
+    return [b for b in boards if b["board"] in INSTALLER_BOARDS]
 
 
 def write_catalog(boards: list[dict], version: str) -> None:

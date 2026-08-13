@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Install XiaoZhi</title>
+  <title>Install ES3C28P</title>
   <style>
     :root {
       --paper: #f7edcf;
@@ -76,7 +76,8 @@
       color: var(--ink);
       font: inherit;
     }
-    .picker select { margin-top: 8px; min-height: 168px; }
+    .picker.single input[type="search"] { display: none; }
+    .picker.single select { min-height: 0; height: auto; }
     .chip {
       margin-top: 10px;
       color: var(--muted);
@@ -245,13 +246,13 @@
   <main>
     <header class="hero">
       <div>
-        <h1>Install XiaoZhi</h1>
-        <p class="lede">Pick a board, then flash firmware from Chrome or Edge over USB.</p>
+        <h1>Install ES3C28P</h1>
+        <p class="lede">Flash XiaoZhi on the LCDWiki 2.8-inch ESP32-S3 from Chrome or Edge over USB.</p>
       </div>
       <div class="picker">
         <label for="board-filter">Board</label>
         <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
-        <select id="board-select" size="8" aria-label="Board list"></select>
+        <select id="board-select" size="1" aria-label="Board list"></select>
         <p class="chip">Chip <strong id="chip-label">-</strong> · <span id="board-count">0</span> variants</p>
       </div>
     </header>
@@ -271,19 +272,19 @@
       </div>
       <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Loading board list…</p>
       <ol class="steps">
-        <li><span>1</span><div>Select the exact board variant. A mismatched image can leave the device unbootable.</div></li>
-        <li><span>2</span><div>Plug the board into USB. Hold <strong>BOOT</strong> if the serial port does not appear.</div></li>
-        <li><span>3</span><div>Click <strong>Connect and install</strong>, pick the port, and allow erase on first install. Press RESET when it finishes.</div></li>
+        <li><span>1</span><div>Plug the ES3C28P into USB. Use the native USB-C port, not a UART dongle, for the first flash.</div></li>
+        <li><span>2</span><div>Hold <strong>BOOT</strong> if the serial port does not appear, then click <strong>Connect and install</strong> and pick the device.</div></li>
+        <li><span>3</span><div>Allow erase on first install so the 16 MB partition table (including the theme slot) is written. Press RESET when it finishes.</div></li>
       </ol>
       <div class="note">
-        Hosted images are optional. If this Worker has no <code>.bin</code> for the selected board, choose a local
-        <code>merged-binary.bin</code> from <code>python scripts/release.py &lt;board&gt;</code>.
+        Hosted images are optional. If this Worker has no <code>.bin</code> yet, choose a local
+        <code>merged-binary.bin</code> from <code>python scripts/release.py es3c28p</code>.
       </div>
     </section>
 
     <section class="panel">
       <h2>Install a file from this computer</h2>
-      <p class="sub">The selected board sets the chip family. Theme packages are only offered for boards that have a theme partition.</p>
+      <p class="sub">Use a full <code>merged-binary.bin</code>, or a theme package for the ES3C28P theme partition.</p>
       <div class="modes">
         <label>
           <input type="radio" name="kind" value="firmware" checked />
@@ -422,6 +423,8 @@
           const wanted = new URLSearchParams(window.location.search).get("board");
           const initial = boards.find((b) => b.id === wanted) || boards.find((b) => b.id === "es3c28p") || boards[0] || null;
           selected = initial;
+          const picker = document.querySelector(".picker");
+          if (picker && boards.length <= 1) picker.classList.add("single");
           renderSelect();
           if (initial) setBoard(initial);
         })

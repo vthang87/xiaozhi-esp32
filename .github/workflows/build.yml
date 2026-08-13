@@ -121,8 +121,8 @@ jobs:
           python scripts/release.py ${{ matrix.board }} --name ${{ matrix.name }}
           if [ "${{ matrix.name }}" = "es3c28p" ]; then
             idf.py es3c28p_storybook_theme
+            python scripts/prepare_installer.py es3c28p
           fi
-          python scripts/prepare_installer.py ${{ matrix.name }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -132,10 +132,11 @@ jobs:
           if-no-files-found: error
 
       - name: Upload installer firmware
+        if: matrix.name == 'es3c28p'
         uses: actions/upload-artifact@v4
         with:
-          name: installer-${{ matrix.name }}
-          path: web/installer/firmware/${{ matrix.name }}/
+          name: installer-es3c28p
+          path: web/installer/firmware/es3c28p/
           if-no-files-found: error
 
   installer:
@@ -156,9 +157,8 @@ jobs:
         continue-on-error: true
         uses: actions/download-artifact@v4
         with:
-          pattern: installer-*
-          path: staging
-          merge-multiple: false
+          name: installer-es3c28p
+          path: staging/installer-es3c28p
 
       - name: Assemble installer
         run: |
