@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Direction C — Track Poster</title>
+  <style>
+    :root {
+      --ink: #11120f;
+      --paper: #f3eedf;
+      --lime: #baf200;
+      --muted: #817f75;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--paper);
+      background: #292a27;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .device-shell {
+      width: 960px;
+      height: 720px;
+      border: 6px solid #0b0b0a;
+      background: #0b0b0a;
+      box-shadow: 18px 22px 0 #171815;
+    }
+
+    .screen {
+      position: relative;
+      width: 320px;
+      height: 240px;
+      overflow: hidden;
+      transform: scale(3);
+      transform-origin: left top;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    .status {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 9px;
+      border-bottom: 2px solid var(--ink);
+      background: var(--paper);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .signal {
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+      height: 9px;
+    }
+
+    .signal i {
+      width: 2px;
+      display: block;
+      background: var(--ink);
+    }
+
+    .signal i:nth-child(1) { height: 3px; }
+    .signal i:nth-child(2) { height: 5px; }
+    .signal i:nth-child(3) { height: 7px; }
+    .signal i:nth-child(4) { height: 9px; }
+
+    .player {
+      height: 181px;
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      background: var(--paper);
+    }
+
+    .poster {
+      position: relative;
+      padding: 9px 7px 7px;
+      overflow: hidden;
+      border-right: 2px solid var(--ink);
+      color: var(--ink);
+      background: var(--lime);
+    }
+
+    .poster-kicker {
+      display: block;
+      max-width: 58px;
+      font-size: 7px;
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .track-no {
+      position: absolute;
+      left: 4px;
+      top: 34px;
+      font-size: 57px;
+      font-weight: 900;
+      line-height: .77;
+      letter-spacing: -6px;
+    }
+
+    .poster-total {
+      position: absolute;
+      left: 8px;
+      bottom: 8px;
+      padding-top: 4px;
+      border-top: 2px solid var(--ink);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .details {
+      min-width: 0;
+      padding: 8px 9px 7px 10px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topline {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .eyebrow {
+      margin-top: 2px;
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .browse {
+      min-width: 55px;
+      height: 23px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 2px solid var(--ink);
+      color: var(--paper);
+      background: var(--ink);
+      font: inherit;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .browse svg { width: 10px; height: 10px; }
+
+    h1 {
+      margin: 7px 0 0;
+      max-width: 200px;
+      overflow: hidden;
+      font-size: 19px;
+      font-weight: 900;
+      line-height: .93;
+      letter-spacing: -1px;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .filename {
+      margin-top: 4px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .timeline {
+      margin-top: 10px;
+    }
+
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 8px;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .3px;
+    }
+
+    .progress {
+      position: relative;
+      height: 8px;
+      border: 2px solid var(--ink);
+      background: transparent;
+    }
+
+    .progress-fill {
+      width: 43%;
+      height: 100%;
+      background: var(--ink);
+    }
+
+    .progress-marker {
+      position: absolute;
+      top: -5px;
+      left: calc(43% - 2px);
+      width: 4px;
+      height: 14px;
+      background: var(--lime);
+      border: 1px solid var(--ink);
+    }
+
+    .controls {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 7px;
+      margin-top: auto;
+    }
+
+    .control {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 2px solid var(--ink);
+      border-radius: 0;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .control svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .control.play {
+      width: 51px;
+      height: 51px;
+      border: 0;
+      color: var(--ink);
+      background: var(--lime);
+      box-shadow: inset 0 0 0 2px var(--ink), 4px 4px 0 var(--ink);
+    }
+
+    .control.play svg { width: 21px; height: 21px; transform: translateX(1px); }
+
+    .tabs {
+      height: 35px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 2px solid var(--ink);
+      background: var(--ink);
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      color: var(--paper);
+      background: var(--ink);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+    }
+
+    .tab + .tab { border-left: 2px solid var(--paper); }
+
+    .tab.active {
+      color: var(--ink);
+      background: var(--lime);
+    }
+
+    .tab svg {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-shell" role="img" aria-label="Track Poster music player concept on a 320 by 240 ESP32 display">
+    <main class="screen">
+      <header class="status">
+        <span>SD Player</span>
+        <div class="status-right">
+          <span>Vol 68%</span>
+          <span class="signal" aria-label="Wi-Fi connected"><i></i><i></i><i></i><i></i></span>
+        </div>
+      </header>
+
+      <section class="player">
+        <aside class="poster">
+          <span class="poster-kicker">Now playing</span>
+          <strong class="track-no">03</strong>
+          <span class="poster-total">of 14 tracks</span>
+        </aside>
+
+        <div class="details">
+          <div class="topline">
+            <span class="eyebrow">SD / Music</span>
+            <button class="browse" aria-label="Browse folders">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 4h5l1.5 2h6.5v7.5h-13z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+              Browse
+            </button>
+          </div>
+
+          <h1>Night Drive</h1>
+          <div class="filename">03_Night_Drive.mp3</div>
+
+          <div class="timeline">
+            <div class="time-row"><span>01:42</span><span>03:58</span></div>
+            <div class="progress" aria-label="43 percent played">
+              <div class="progress-fill"></div>
+              <div class="progress-marker"></div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="control" aria-label="Previous track">
+              <svg viewBox="0 0 20 20"><path d="M3 3h3v14H3zM17 4v12L7 10z"/></svg>
+            </button>
+            <button class="control play" aria-label="Play">
+              <svg viewBox="0 0 24 24"><path d="M6 3l15 9-15 9z"/></svg>
+            </button>
+            <button class="control" aria-label="Next track">
+              <svg viewBox="0 0 20 20"><path d="M14 3h3v14h-3zM3 4v12l10-6z"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Primary navigation">
+        <div class="tab">
+          <svg viewBox="0 0 16 16"><path d="M2 2.5h12v8H8l-3.5 3v-3H2z"/></svg>
+          AI Chat
+        </div>
+        <div class="tab active">
+          <svg viewBox="0 0 16 16"><path d="M6 12.5a2.5 2.5 0 1 1-2-2.45V4l9-2v8.5a2.5 2.5 0 1 1-2-2.45V5L6 6z"/></svg>
+          Music
+        </div>
+      </nav>
+    </main>
+  </div>
+</body>
+</html>

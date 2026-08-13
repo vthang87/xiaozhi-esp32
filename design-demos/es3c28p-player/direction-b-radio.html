@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ES3C28P Player — Pocket Radio</title>
+  <style>
+    :root {
+      --screen-scale: 3;
+      --cream: #f2e6cc;
+      --paper: #fff7e5;
+      --ink: #27231f;
+      --muted: #766d61;
+      --terracotta: #c75b39;
+      --terracotta-dark: #733723;
+      --sage: #94a584;
+      --line: #27231f;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #bbb2a4;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .device {
+      width: calc(320px * var(--screen-scale));
+      height: calc(240px * var(--screen-scale));
+      position: relative;
+      background: #171512;
+      border: 12px solid #171512;
+      border-radius: 28px;
+      box-shadow: 12px 14px 0 #857b6e;
+    }
+
+    .screen {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 320px;
+      height: 240px;
+      transform: scale(var(--screen-scale));
+      transform-origin: top left;
+      overflow: hidden;
+      background: var(--cream);
+      border-radius: 5px;
+    }
+
+    .status {
+      height: 18px;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--cream);
+      background: var(--ink);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .status-left,
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .sd-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--sage);
+      border: 1px solid #dfe6d7;
+      border-radius: 50%;
+    }
+
+    .battery {
+      width: 15px;
+      height: 7px;
+      padding: 1px;
+      border: 1px solid var(--cream);
+      position: relative;
+    }
+
+    .battery::before {
+      content: "";
+      display: block;
+      width: 9px;
+      height: 3px;
+      background: var(--cream);
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -3px;
+      top: 2px;
+      width: 2px;
+      height: 3px;
+      background: var(--cream);
+    }
+
+    .toolbar {
+      height: 32px;
+      padding: 5px 7px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 17px;
+      line-height: 1;
+      letter-spacing: -.5px;
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      color: var(--terracotta-dark);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .browse {
+      height: 21px;
+      padding: 0 9px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      box-shadow: 2px 2px 0 var(--line);
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .folder {
+      width: 10px;
+      height: 7px;
+      position: relative;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+    }
+
+    .folder::before {
+      content: "";
+      position: absolute;
+      left: -1.5px;
+      top: -4px;
+      width: 5px;
+      height: 3px;
+      border: 1.5px solid var(--line);
+      border-bottom: 0;
+      background: var(--paper);
+    }
+
+    .content {
+      height: 165px;
+      padding: 6px 7px 5px;
+    }
+
+    .track-card {
+      height: 55px;
+      display: grid;
+      grid-template-columns: 48px 1fr 27px;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      box-shadow: 3px 3px 0 var(--line);
+    }
+
+    .track-number {
+      display: grid;
+      place-items: center;
+      border-right: 1.5px solid var(--line);
+      background: var(--terracotta);
+      color: #fff8e7;
+    }
+
+    .track-number strong {
+      display: block;
+      font-size: 24px;
+      line-height: 21px;
+      letter-spacing: -1.5px;
+    }
+
+    .track-number small {
+      display: block;
+      margin-top: 2px;
+      text-align: center;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .track-copy {
+      min-width: 0;
+      padding: 7px 8px 5px;
+    }
+
+    .eyebrow {
+      color: var(--terracotta-dark);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
+
+    .filename {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .3px;
+    }
+
+    .grille {
+      padding: 7px 5px;
+      border-left: 1.5px solid var(--line);
+      background: #ded0b7;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .grille i {
+      display: block;
+      width: 2px;
+      height: 38px;
+      background: var(--line);
+    }
+
+    .transport-row {
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: 1fr 97px;
+      gap: 8px;
+    }
+
+    .timeline {
+      min-width: 0;
+      padding-top: 2px;
+    }
+
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-family: "Courier New", monospace;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .rail {
+      height: 12px;
+      position: relative;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+    }
+
+    .rail-fill {
+      width: 43%;
+      height: 100%;
+      background: var(--terracotta);
+      border-right: 1.5px solid var(--line);
+    }
+
+    .rail-marker {
+      position: absolute;
+      left: 43%;
+      top: -4px;
+      width: 5px;
+      height: 18px;
+      margin-left: -2px;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+    }
+
+    .track-total {
+      padding-top: 5px;
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .mode-badge {
+      height: 34px;
+      padding: 5px 7px;
+      border: 1.5px solid var(--line);
+      background: var(--sage);
+      box-shadow: 2px 2px 0 var(--line);
+    }
+
+    .mode-badge small {
+      display: block;
+      font-size: 6px;
+      font-weight: 700;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .mode-badge strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 10px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      height: 44px;
+      margin-top: 6px;
+      display: grid;
+      grid-template-columns: 1fr 1.35fr 1fr;
+      gap: 7px;
+    }
+
+    .control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      box-shadow: 3px 3px 0 var(--line);
+      color: var(--ink);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+    }
+
+    .control.play {
+      background: var(--terracotta);
+      color: #fff8e7;
+    }
+
+    .prev-icon,
+    .next-icon {
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+
+    .prev-icon { border-right: 8px solid currentColor; }
+    .next-icon { border-left: 8px solid currentColor; }
+
+    .play-icon {
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 11px solid currentColor;
+    }
+
+    .tabs {
+      height: 25px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 2px solid var(--line);
+      background: var(--paper);
+    }
+
+    .tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+
+    .tab:first-child { border-right: 1.5px solid var(--line); }
+
+    .tab.active {
+      color: #fff8e7;
+      background: var(--ink);
+    }
+
+    .chat-icon {
+      width: 10px;
+      height: 8px;
+      position: relative;
+      border: 1.5px solid currentColor;
+    }
+
+    .chat-icon::after {
+      content: "";
+      position: absolute;
+      left: 1px;
+      bottom: -4px;
+      border-top: 3px solid currentColor;
+      border-right: 3px solid transparent;
+    }
+
+    .music-icon {
+      width: 11px;
+      height: 10px;
+      position: relative;
+      border-left: 2px solid currentColor;
+      border-right: 2px solid currentColor;
+      transform: skewY(-10deg);
+    }
+
+    .music-icon::before,
+    .music-icon::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      width: 5px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .music-icon::before { left: -5px; }
+    .music-icon::after { right: -5px; }
+  </style>
+</head>
+<body>
+  <main class="device" aria-label="Pocket Radio music player concept">
+    <section class="screen">
+      <header class="status">
+        <div class="status-left"><span class="sd-dot"></span><span>SD mounted</span></div>
+        <div class="status-right"><span>Vol 72%</span><span class="battery"></span></div>
+      </header>
+
+      <div class="toolbar">
+        <div class="brand"><h1>SD Radio</h1><span>Player 01</span></div>
+        <button class="browse" type="button"><span class="folder"></span>Browse</button>
+      </div>
+
+      <section class="content">
+        <div class="track-card">
+          <div class="track-number"><div><strong>03</strong><small>Track</small></div></div>
+          <div class="track-copy">
+            <div class="eyebrow">Now playing</div>
+            <div class="filename">Acoustic Session.mp3</div>
+            <div class="meta">/MUSIC/PLAYLIST_A</div>
+          </div>
+          <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="transport-row">
+          <div class="timeline">
+            <div class="time-labels"><span>01:42</span><span>03:58</span></div>
+            <div class="rail"><div class="rail-fill"></div><span class="rail-marker"></span></div>
+            <div class="track-total">03 of 14 tracks</div>
+          </div>
+          <div class="mode-badge"><small>Playback</small><strong>Playing</strong></div>
+        </div>
+
+        <div class="controls">
+          <button class="control" type="button"><span class="prev-icon"></span>Prev</button>
+          <button class="control play" type="button"><span class="play-icon"></span>Play</button>
+          <button class="control" type="button">Next<span class="next-icon"></span></button>
+        </div>
+      </section>
+
+      <nav class="tabs" aria-label="Application tabs">
+        <div class="tab"><span class="chat-icon"></span>AI Chat</div>
+        <div class="tab active"><span class="music-icon"></span>Music</div>
+      </nav>
+    </section>
+  </main>
+</body>
+</html>

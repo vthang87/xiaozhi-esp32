@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice Console — ESP32 AI Chat</title>
+  <!--
+    Assumptions:
+    - Target display is exactly 320x240 in landscape orientation.
+    - AI voice is currently active and waiting for the user to speak.
+    - The lower-right microphone is the only control that starts/stops listening.
+    - Shapes, borders, waveform bars, and icons map directly to simple LVGL objects.
+    - Bottom navigation remains fixed and never scrolls with chat content.
+  -->
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --screen: #17191b;
+      --panel: #222528;
+      --panel-deep: #121416;
+      --line: #383d41;
+      --text: #f4f1e9;
+      --muted: #999fa2;
+      --amber: #f0b84a;
+      --cyan: #69c8cf;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: #0d0e0f;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .device {
+      width: 320px;
+      height: 240px;
+      position: relative;
+      overflow: hidden;
+      background: var(--screen);
+      border: 1px solid #42474a;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, .45);
+      transform: scale(3);
+      transform-origin: center;
+    }
+
+    .status {
+      height: 23px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+    }
+
+    .status-left,
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ai-mark {
+      padding: 2px 4px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      color: var(--cyan);
+    }
+
+    .signal {
+      width: 12px;
+      height: 10px;
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+    }
+
+    .signal i {
+      width: 2px;
+      display: block;
+      background: var(--text);
+    }
+
+    .signal i:nth-child(1) { height: 3px; }
+    .signal i:nth-child(2) { height: 5px; }
+    .signal i:nth-child(3) { height: 7px; }
+    .signal i:nth-child(4) { height: 9px; }
+
+    .console {
+      height: 187px;
+      position: relative;
+      padding: 8px 10px 7px;
+    }
+
+    .console-head {
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      color: var(--amber);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+
+    .live {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--cyan);
+      font-family: "Courier New", monospace;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+
+    .live-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+    }
+
+    .voice-stage {
+      height: 91px;
+      margin-top: 4px;
+      padding: 9px 10px 8px;
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--cyan);
+      border-radius: 3px;
+      background: var(--panel-deep);
+    }
+
+    .state {
+      color: var(--muted);
+      font-family: "Courier New", monospace;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .response {
+      margin-top: 3px;
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 21px;
+      letter-spacing: -.3px;
+    }
+
+    .response em {
+      color: var(--cyan);
+      font-style: normal;
+    }
+
+    .waveform {
+      height: 22px;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+    }
+
+    .waveform::before,
+    .waveform::after {
+      content: "";
+      width: 14px;
+      height: 1px;
+      flex: 0 0 14px;
+      background: var(--line);
+    }
+
+    .waveform i {
+      width: 3px;
+      display: block;
+      flex: 0 0 3px;
+      background: var(--cyan);
+    }
+
+    .waveform i:nth-child(1)  { height: 5px; }
+    .waveform i:nth-child(2)  { height: 10px; }
+    .waveform i:nth-child(3)  { height: 16px; }
+    .waveform i:nth-child(4)  { height: 8px; }
+    .waveform i:nth-child(5)  { height: 20px; background: var(--amber); }
+    .waveform i:nth-child(6)  { height: 13px; }
+    .waveform i:nth-child(7)  { height: 7px; }
+    .waveform i:nth-child(8)  { height: 17px; }
+    .waveform i:nth-child(9)  { height: 11px; }
+    .waveform i:nth-child(10) { height: 4px; }
+    .waveform i:nth-child(11) { height: 9px; }
+    .waveform i:nth-child(12) { height: 15px; }
+    .waveform i:nth-child(13) { height: 6px; }
+    .waveform i:nth-child(14) { height: 11px; }
+    .waveform i:nth-child(15) { height: 4px; }
+
+    .recent {
+      width: 236px;
+      height: 51px;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 13px;
+    }
+
+    .recent-row {
+      display: grid;
+      grid-template-columns: 25px minmax(0, 1fr);
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .recent-row + .recent-row { margin-top: 3px; }
+
+    .speaker-label {
+      color: var(--amber);
+      font-family: "Courier New", monospace;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+
+    .recent-row.ai .speaker-label { color: var(--cyan); }
+
+    .recent-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mic {
+      width: 44px;
+      height: 44px;
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1px solid var(--amber);
+      border-radius: 50%;
+      background: var(--amber);
+      color: #161719;
+    }
+
+    .mic::after {
+      content: "";
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      inset: -4px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+    }
+
+    .mic svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .nav {
+      height: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+      border-top: 1px solid var(--line);
+      background: var(--panel-deep);
+    }
+
+    .tab {
+      min-width: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      overflow: hidden;
+      color: #777d80;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+    }
+
+    .tab + .tab { border-left: 1px solid var(--line); }
+    .tab.active { color: var(--text); }
+
+    .tab.active::after {
+      content: "";
+      width: 36px;
+      height: 2px;
+      position: absolute;
+      bottom: 0;
+      left: calc(50% - 18px);
+      background: var(--amber);
+    }
+
+    .tab svg { width: 12px; height: 12px; flex: 0 0 12px; }
+
+    @media (max-width: 1080px), (max-height: 780px) {
+      .device { transform: scale(2.2); }
+    }
+
+    @media (max-width: 780px), (max-height: 560px) {
+      .device { transform: scale(1.5); }
+    }
+  </style>
+</head>
+<body>
+  <main class="device" aria-label="Voice Console AI chat concept">
+    <header class="status">
+      <div class="status-left">
+        <span class="ai-mark">AI</span>
+        <span>Voice Console</span>
+      </div>
+      <div class="status-right">
+        <span class="signal" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>Online</span>
+      </div>
+    </header>
+
+    <section class="console">
+      <div class="console-head">
+        <span class="eyebrow">Voice channel</span>
+        <span class="live"><i class="live-dot"></i>LIVE 00:08</span>
+      </div>
+
+      <div class="voice-stage">
+        <div class="state">Microphone open</div>
+        <div class="response">Go ahead — <em>I'm listening.</em></div>
+        <div class="waveform" aria-label="Live microphone level">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+
+      <div class="recent" aria-label="Recent conversation">
+        <div class="recent-row">
+          <span class="speaker-label">YOU</span>
+          <span class="recent-text">What's playing on the SD card?</span>
+        </div>
+        <div class="recent-row ai">
+          <span class="speaker-label">AI</span>
+          <span class="recent-text">There are 7 tracks ready to play.</span>
+        </div>
+      </div>
+
+      <button class="mic" type="button" aria-label="Stop listening">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="8" y="3" width="8" height="12" rx="4" fill="currentColor"/>
+          <path d="M5.5 11.5v.5a6.5 6.5 0 0 0 13 0v-.5M12 18.5V22M8.5 22h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </section>
+
+    <nav class="nav" aria-label="Primary">
+      <div class="tab active">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 3.5h12v8H7l-3.5 2v-2H2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        AI Chat
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="5" cy="12" r="2" stroke="currentColor" stroke-width="1.4"/>
+          <circle cx="12" cy="10.5" r="2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M7 12V4l7-1.5v8" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+        Music
+      </div>
+    </nav>
+  </main>
+</body>
+</html>

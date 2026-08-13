@@ -1,0 +1,19 @@
+{
+  "format": 1,
+  "id": "storybook-garden",
+  "name": "Storybook Garden",
+  "layout": "kids-storybook",
+  "radius": 14,
+  "palette": {
+    "screen": "#D9F0E7",
+    "panel": "#FFFAF0",
+    "line": "#31534C",
+    "text": "#24423D",
+    "muted": "#57716B",
+    "primary": "#EF765F",
+    "secondary": "#8FD6DA",
+    "positive": "#78BD76",
+    "highlight": "#F5C84E",
+    "role": "#A25245"
+  }
+}

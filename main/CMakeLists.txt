@@ -558,6 +558,11 @@ elseif(CONFIG_BOARD_TYPE_AIPI_LITE)
     set(BUILTIN_TEXT_FONT font_puhui_basic_14_1)
     set(BUILTIN_ICON_FONT font_awesome_14_1)
     set(DEFAULT_EMOJI_COLLECTION twemoji_32)
+elseif(CONFIG_BOARD_TYPE_ES3C28P)
+    set(BOARD_TYPE "es3c28p")
+    set(BUILTIN_TEXT_FONT font_puhui_basic_20_4)
+    set(BUILTIN_ICON_FONT font_awesome_20_4)
+    set(DEFAULT_EMOJI_COLLECTION twemoji_64)
 elseif(CONFIG_BOARD_TYPE_HU_087)
     set(BOARD_TYPE "hu-087")
     set(BUILTIN_TEXT_FONT font_puhui_basic_14_1)
@@ -709,6 +714,29 @@ idf_component_register(SRCS ${SOURCES}
                     INCLUDE_DIRS ${INCLUDE_DIRS}
                     WHOLE_ARCHIVE
                     )
+
+# Build the ES3C28P kids theme as a standalone artifact. It is intentionally
+# not attached to the normal flash target, so core OTA and theme delivery stay
+# independent.
+if(CONFIG_BOARD_TYPE_ES3C28P)
+    set(ES3C28P_STORYBOOK_MANIFEST
+        "${PROJECT_DIR}/themes/es3c28p/storybook-garden/theme.json")
+    set(ES3C28P_STORYBOOK_PACKAGE
+        "${CMAKE_BINARY_DIR}/storybook-garden.theme.bin")
+    add_custom_command(
+        OUTPUT "${ES3C28P_STORYBOOK_PACKAGE}"
+        COMMAND python "${PROJECT_DIR}/scripts/build_theme_package.py"
+            --input "${ES3C28P_STORYBOOK_MANIFEST}"
+            --output "${ES3C28P_STORYBOOK_PACKAGE}"
+        DEPENDS
+            "${ES3C28P_STORYBOOK_MANIFEST}"
+            "${PROJECT_DIR}/scripts/build_theme_package.py"
+        COMMENT "Building standalone Storybook Garden theme package"
+        VERBATIM
+    )
+    add_custom_target(es3c28p_storybook_theme
+        DEPENDS "${ES3C28P_STORYBOOK_PACKAGE}")
+endif()
 
 # Use target_compile_definitions to define BOARD_TYPE, BOARD_NAME
 # If BOARD_NAME is empty, use BOARD_TYPE
