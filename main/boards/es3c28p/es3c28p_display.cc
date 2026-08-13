@@ -14,9 +14,12 @@ LV_FONT_DECLARE(font_material_symbols_14_1);
 #include <esp_wifi.h>
 #include <ssid_manager.h>
 #include <wifi_manager.h>
+#include <esp_log.h>
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+
+#define TAG "Es3c28pDisplay"
 
 namespace {
 uint32_t kScreenColor = 0x17191B;
@@ -138,7 +141,6 @@ Es3c28pDisplay::Es3c28pDisplay(esp_lcd_panel_io_handle_t panel_io,
     kRoleColor = tokens.role;
     kButtonRadius = tokens.radius;
     kKidsTheme = tokens.kids_mode;
-    SetupMusicUi();
 }
 
 Es3c28pDisplay::~Es3c28pDisplay() {
@@ -170,6 +172,21 @@ Es3c28pDisplay::~Es3c28pDisplay() {
         chat_mic_button_ = nullptr;
         chat_mic_icon_ = nullptr;
     }
+}
+
+void Es3c28pDisplay::SetupUI() {
+    if (setup_ui_called_) {
+        ESP_LOGW(TAG, "SetupUI() called multiple times, skipping duplicate call");
+        return;
+    }
+    // Do not call LcdDisplay::SetupUI(): the default emoji/chat chrome would
+    // cover the custom chat + SD music pages.
+    Display::SetupUI();
+    SetupMusicUi();
+}
+
+void Es3c28pDisplay::SetEmotion(const char* emotion) {
+    (void)emotion;
 }
 
 void Es3c28pDisplay::SetupStorybookUi() {
