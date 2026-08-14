@@ -444,6 +444,7 @@ public:
 
     void StartNetwork() override {
         WifiBoard::StartNetwork();
+        web_server_.SetMusicPlayer(music_player_);
         if (web_server_.Start()) {
             ESP_LOGI(TAG, "Web configuration: %s", web_server_.url().c_str());
         }

@@ -1,6 +1,7 @@
 # LCDWiki ES3C28P
 
 Support for the LCDWiki ES3C28P 2.8-inch ESP32-S3 display module.
+Firmware version: **2.4.2**.
 
 ## Hardware
 
@@ -63,7 +64,17 @@ serial port does not appear. First install should erase flash so the 16 MB table
 
 Insert a FAT32-formatted MicroSD card before boot. The player scans the card root
 and subdirectories (up to four levels deep) for as many as 256 `.mp3` files.
-Tracks are sorted by their full path.
+Tracks follow the saved playlist order when one exists, otherwise they are sorted
+by their full path.
+
+Use the device web page (`http://<device-ip>/`) to manage music on the card:
+play, pause, skip, and start a track from the library list; browse folders;
+create or rename folders; drag tracks or folders into another folder; download
+MP3 files from a direct HTTP(S) URL (faster than browser upload); upload MP3
+files from the computer (up to 100 MB each); remove tracks or folders; and
+arrange playback order with Up/Down or drag-and-drop. Playback pauses while the
+library is changed, then continues. Web playback controls are locked while an AI
+conversation is active, matching the on-device player.
 
 Use the fixed `AI Chat` and `Music` tabs to switch between the two independent
 screens. AI status and messages remain on the chat screen; playback state and the
