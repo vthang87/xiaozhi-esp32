@@ -1148,6 +1148,33 @@ class BuildOptionTests(unittest.TestCase):
         self.assertIn("CONFIG_FLASH_EXPRESSION_ASSETS=n", options)
         self.assertIn("CONFIG_USE_MULTILINE_CHAT_MESSAGE=y", options)
 
+    def test_idle_display_kconfig_options_exist(self):
+        kconfig = (ROOT / "main/Kconfig.projbuild").read_text(encoding="utf-8")
+        clock = kconfig.split("config IDLE_CLOCK_TIMEOUT_S\n", 1)[1].split(
+            "config ", 1
+        )[0]
+        dim = kconfig.split("config STANDBY_DIM_TIMEOUT_S\n", 1)[1].split(
+            "config ", 1
+        )[0]
+        brightness = kconfig.split("config STANDBY_DIM_BRIGHTNESS\n", 1)[1].split(
+            "endmenu\n", 1
+        )[0]
+        self.assertIn("default 1800", clock)
+        self.assertIn("default 60", dim)
+        self.assertIn("default 10", brightness)
+
+    def test_es3c28p_screenshot_api_is_disabled_by_default(self):
+        kconfig = (ROOT / "main/Kconfig.projbuild").read_text(encoding="utf-8")
+        block = kconfig.split("config ES3C28P_SCREENSHOT_API\n", 1)[1].split(
+            "config ", 1
+        )[0]
+        self.assertIn("default n", block)
+        config = json.loads(
+            (ROOT / "main/boards/es3c28p/config.json").read_text(encoding="utf-8")
+        )
+        append = config["builds"][0]["sdkconfig_append"]
+        self.assertNotIn("CONFIG_ES3C28P_SCREENSHOT_API=y", append)
+
     def test_camera_mirror_guard_is_settable_by_build_defaults(self):
         kconfig = (ROOT / "main/Kconfig.projbuild").read_text(
             encoding="utf-8"

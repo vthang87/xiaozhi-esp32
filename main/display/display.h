@@ -49,6 +49,16 @@ public:
     virtual void SetEmojiCollection(std::shared_ptr<EmojiCollection>) {}
     virtual void SetupUI() { setup_ui_called_ = true; }
 
+    // Idle clock screensaver and standby dim. Timeouts are seconds; 0 disables.
+    void OnClockTick();
+    void DismissIdleEffects();
+    int idle_clock_timeout_s() const { return clock_timeout_s_; }
+    int standby_dim_timeout_s() const { return dim_timeout_s_; }
+    int standby_dim_brightness() const { return dim_brightness_; }
+    void SetIdleClockTimeout(int seconds);
+    void SetStandbyDimTimeout(int seconds);
+    void SetStandbyDimBrightness(int brightness);
+
     inline int width() const { return width_; }
     inline int height() const { return height_; }
     inline bool IsSetupUICalled() const { return setup_ui_called_; }
@@ -59,6 +69,15 @@ protected:
     bool setup_ui_called_ = false;  // Track if SetupUI() has been called
 
     Theme* current_theme_ = nullptr;
+
+    int idle_seconds_ = 0;
+    int clock_timeout_s_ = 1800;
+    int dim_timeout_s_ = 60;
+    int dim_brightness_ = 10;
+    bool screen_dimmed_ = false;
+    bool clock_visible_ = false;
+
+    virtual void UpdateIdleOverlay();
 
     friend class DisplayLockGuard;
     virtual bool Lock(int timeout_ms = 0) = 0;

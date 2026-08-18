@@ -2,6 +2,7 @@
 #define ES3C28P_WEB_SERVER_H_
 
 #include <esp_http_server.h>
+#include <sdkconfig.h>
 
 #include <string>
 
@@ -35,6 +36,9 @@ private:
     static esp_err_t HandleMediaPlayer(httpd_req_t* req);
     static esp_err_t HandleWifiReset(httpd_req_t* req);
     static esp_err_t HandleReboot(httpd_req_t* req);
+#if CONFIG_ES3C28P_SCREENSHOT_API
+    static esp_err_t HandleScreenshot(httpd_req_t* req);
+#endif
 
     bool Authorize(httpd_req_t* req) const;
     static bool ReceiveJson(httpd_req_t* req, std::string& body,

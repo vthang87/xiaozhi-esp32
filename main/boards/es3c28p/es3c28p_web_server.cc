@@ -4,6 +4,8 @@
 #include "audio_codec.h"
 #include "board.h"
 #include "display.h"
+#include "es3c28p_display.h"
+#include "lvgl_display.h"
 #include "sd_music_player.h"
 #include "settings.h"
 #include "system_info.h"
@@ -22,6 +24,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <vector>
 
 namespace {
@@ -299,6 +302,9 @@ bool Es3c28pWebServer::Start() {
         {.uri = "/api/media/player", .method = HTTP_POST, .handler = HandleMediaPlayer, .user_ctx = this},
         {.uri = "/api/wifi/reset", .method = HTTP_POST, .handler = HandleWifiReset, .user_ctx = this},
         {.uri = "/api/reboot", .method = HTTP_POST, .handler = HandleReboot, .user_ctx = this},
+#if CONFIG_ES3C28P_SCREENSHOT_API
+        {.uri = "/api/screenshot", .method = HTTP_GET, .handler = HandleScreenshot, .user_ctx = this},
+#endif
     };
     for (const auto& handler : handlers) {
         if (httpd_register_uri_handler(server_, &handler) != ESP_OK) {
@@ -878,6 +884,46 @@ esp_err_t Es3c28pWebServer::HandleReboot(httpd_req_t* req) {
     ScheduleRestart();
     return ESP_OK;
 }
+
+#if CONFIG_ES3C28P_SCREENSHOT_API
+esp_err_t Es3c28pWebServer::HandleScreenshot(httpd_req_t* req) {
+    auto* self = static_cast<Es3c28pWebServer*>(req->user_ctx);
+    if (!self->Authorize(req)) return ESP_OK;
+
+    auto* display = dynamic_cast<LvglDisplay*>(Board::GetInstance().GetDisplay());
+    if (display == nullptr) {
+        SendError(req, "Display snapshot is unavailable", "503 Service Unavailable");
+        return ESP_OK;
+    }
+
+    int quality = 80;
+    char query[64];
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        char value[8];
+        if (httpd_query_key_value(query, "quality", value, sizeof(value)) == ESP_OK) {
+            quality = std::clamp(atoi(value), 1, 100);
+        }
+        char page[12];
+        if (httpd_query_key_value(query, "page", page, sizeof(page)) == ESP_OK &&
+            strcmp(page, "music") == 0) {
+            if (auto* es_display = dynamic_cast<Es3c28pDisplay*>(display)) {
+                es_display->ShowMusicPage(true);
+            }
+        }
+    }
+
+    std::string jpeg;
+    if (!display->SnapshotToJpeg(jpeg, quality)) {
+        SendError(req, "Failed to snapshot screen", "500 Internal Server Error");
+        return ESP_OK;
+    }
+
+    httpd_resp_set_type(req, "image/jpeg");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    httpd_resp_send(req, jpeg.data(), jpeg.size());
+    return ESP_OK;
+}
+#endif
 
 void Es3c28pWebServer::ScheduleRestart() {
     xTaskCreate([](void*) {

@@ -77,8 +77,51 @@ void McpServer::AddCommonTools() {
             });
     }
 
-#ifdef HAVE_LVGL
     auto display = board.GetDisplay();
+    if (display) {
+        AddTool("self.screen.get_idle_settings",
+            "Get idle clock screensaver and standby dim settings. Timeouts are in seconds; 0 means disabled.",
+            PropertyList(),
+            [display](const PropertyList& properties) -> ReturnValue {
+                cJSON* json = cJSON_CreateObject();
+                cJSON_AddNumberToObject(json, "clock_timeout_s", display->idle_clock_timeout_s());
+                cJSON_AddNumberToObject(json, "dim_timeout_s", display->standby_dim_timeout_s());
+                cJSON_AddNumberToObject(json, "dim_brightness", display->standby_dim_brightness());
+                return json;
+            });
+
+        AddTool("self.screen.set_idle_clock_timeout",
+            "Set how many seconds the device stays idle before showing a full-screen clock. 0 disables the clock screensaver. Default is 1800 (30 minutes).",
+            PropertyList({
+                Property("timeout_s", kPropertyTypeInteger, 0, 86400)
+            }),
+            [display](const PropertyList& properties) -> ReturnValue {
+                display->SetIdleClockTimeout(properties["timeout_s"].value<int>());
+                return true;
+            });
+
+        AddTool("self.screen.set_standby_dim_timeout",
+            "Set how many seconds the device stays idle before dimming the screen. 0 disables dimming.",
+            PropertyList({
+                Property("timeout_s", kPropertyTypeInteger, 0, 86400)
+            }),
+            [display](const PropertyList& properties) -> ReturnValue {
+                display->SetStandbyDimTimeout(properties["timeout_s"].value<int>());
+                return true;
+            });
+
+        AddTool("self.screen.set_standby_dim_brightness",
+            "Set the backlight brightness (0-100) used when the screen is dimmed in standby.",
+            PropertyList({
+                Property("brightness", kPropertyTypeInteger, 0, 100)
+            }),
+            [display](const PropertyList& properties) -> ReturnValue {
+                display->SetStandbyDimBrightness(properties["brightness"].value<int>());
+                return true;
+            });
+    }
+
+#ifdef HAVE_LVGL
     if (display && display->GetTheme() != nullptr) {
         AddTool("self.screen.set_theme",
             "Set the theme of the screen. The theme can be `light` or `dark`.",
@@ -187,9 +230,10 @@ void McpServer::AddUserOnlyTools() {
             });
 
 #if CONFIG_LV_USE_SNAPSHOT
-        AddUserOnlyTool("self.screen.snapshot", "Snapshot the screen and upload it to a specific URL",
+        AddUserOnlyTool("self.screen.snapshot",
+            "Capture the current screen as JPEG. If `url` is omitted, the image is returned in the MCP result. If `url` is set, the device uploads the JPEG as multipart form field `file`. Prefer returning the image over WebSocket; MQTT payloads may be too small for large screens.",
             PropertyList({
-                Property("url", kPropertyTypeString),
+                Property("url", kPropertyTypeString, std::string()),
                 Property("quality", kPropertyTypeInteger, 80, 1, 100)
             }),
             [display](const PropertyList& properties) -> ReturnValue {
@@ -199,6 +243,11 @@ void McpServer::AddUserOnlyTools() {
                 std::string jpeg_data;
                 if (!display->SnapshotToJpeg(jpeg_data, quality)) {
                     throw std::runtime_error("Failed to snapshot screen");
+                }
+
+                if (url.empty()) {
+                    ESP_LOGI(TAG, "Snapshot screen %u bytes", jpeg_data.size());
+                    return new ImageContent("image/jpeg", jpeg_data);
                 }
 
                 ESP_LOGI(TAG, "Upload snapshot %u bytes to %s", jpeg_data.size(), url.c_str());

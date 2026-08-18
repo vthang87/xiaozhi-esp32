@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Install ES3C28P</title>
+  <title>Install XiaoZhi</title>
   <style>
     :root {
       --paper: #f7edcf;
@@ -34,9 +34,9 @@
     }
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.9fr);
+      grid-template-columns: minmax(260px, 0.95fr) minmax(0, 1fr);
       gap: 28px;
-      align-items: end;
+      align-items: start;
       margin-bottom: 28px;
     }
     h1 {
@@ -58,6 +58,7 @@
       border-radius: var(--radius);
       box-shadow: 0 6px 0 var(--line);
       padding: 16px;
+      margin-top: 22px;
     }
     .picker label {
       display: block;
@@ -78,9 +79,15 @@
     }
     .picker.single input[type="search"] { display: none; }
     .picker.single select { min-height: 0; height: auto; }
+    .board-card {
+      background: var(--cream);
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 6px 0 var(--line);
+      padding: 16px;
+    }
     .board-photo {
       display: none;
-      margin-top: 12px;
       width: 100%;
       aspect-ratio: 1;
       object-fit: contain;
@@ -248,12 +255,6 @@
     }
     .modes input { accent-color: var(--line); }
     .hidden { display: none; }
-    footer {
-      margin-top: 28px;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.45;
-    }
     code {
       font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       font-size: 0.88em;
@@ -271,18 +272,20 @@
 <body>
   <main>
     <header class="hero">
-      <div>
-        <h1>Install ES3C28P</h1>
-        <p class="lede">Flash XiaoZhi on the LCDWiki 2.8-inch ESP32-S3 from Chrome or Edge over USB.</p>
-      </div>
-      <div class="picker">
-        <label for="board-filter">Board</label>
-        <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
-        <select id="board-select" size="1" aria-label="Board list"></select>
+      <section class="board-card" aria-label="Selected board">
         <img id="board-photo" class="board-photo" alt="" />
         <p id="board-summary" class="board-summary"></p>
         <a id="board-docs" class="board-docs" href="#" target="_blank" rel="noopener noreferrer"></a>
         <p class="chip">Chip <strong id="chip-label">-</strong> · <span id="board-count">0</span> variants</p>
+      </section>
+      <div>
+        <h1>Install XiaoZhi</h1>
+        <p class="lede">Flash firmware from Chrome or Edge over USB. Choose a board, then connect the device.</p>
+        <div class="picker">
+          <label for="board-filter">Board</label>
+          <input id="board-filter" type="search" placeholder="Filter by name" autocomplete="off" />
+          <select id="board-select" size="1" aria-label="Board list"></select>
+        </div>
       </div>
     </header>
 
@@ -301,7 +304,7 @@
       </div>
       <p id="host-status" class="sub" style="margin-top:14px;margin-bottom:0">Loading board list…</p>
       <ol class="steps">
-        <li><span>1</span><div>Plug the ES3C28P into USB. Use the native USB-C port, not a UART dongle, for the first flash.</div></li>
+        <li><span>1</span><div>Plug the board into USB. Use the native USB-C port, not a UART dongle, for the first flash.</div></li>
         <li><span>2</span><div>Hold <strong>BOOT</strong> if the serial port does not appear, then click <strong>Connect and install</strong> and pick the device.</div></li>
         <li><span>3</span><div>Allow erase on first install so the 16 MB partition table (including the theme slot) is written. Press RESET when it finishes.</div></li>
       </ol>
@@ -309,7 +312,7 @@
 
     <section class="panel">
       <h2>Install a file from this computer</h2>
-      <p class="sub">Use a full <code>merged-binary.bin</code>, or a theme package for the ES3C28P theme partition.</p>
+      <p class="sub">Use a full <code>merged-binary.bin</code>, or a theme package for the theme partition.</p>
       <div class="modes">
         <label>
           <input type="radio" name="kind" value="firmware" checked />
@@ -329,13 +332,6 @@
         <button class="primary" id="use-local" type="button" disabled>Use this file</button>
       </div>
     </section>
-
-    <footer>
-      Prepare hosted bins with GitHub Actions (**Build Boards**) or
-      <code>python scripts/prepare_installer.py &lt;variant&gt;</code>. Worker
-      <code>xiaozhi-install</code> is deployed from CI. Local preview:
-      <code>python3 -m http.server 8080 --directory web/installer</code>
-    </footer>
   </main>
   <script>
     (function () {

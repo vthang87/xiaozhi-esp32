@@ -119,7 +119,7 @@ These tools are hidden by default. The backend must pass `withUserTools=true` to
 | `self.reboot` | Reboot the device after a short delay. |
 | `self.upgrade_firmware` | Download firmware from `url` and install it, then reboot. |
 | `self.screen.get_info` | Return the current screen width, height, and whether it is monochrome (LVGL boards only). |
-| `self.screen.snapshot` | Snapshot the screen as JPEG and upload it to `url` (LVGL boards, when `CONFIG_LV_USE_SNAPSHOT=y`). |
+| `self.screen.snapshot` | Capture the screen as JPEG. Omit `url` to get the image in the MCP result (`type=image`); set `url` to upload multipart field `file` (LVGL boards, when `CONFIG_LV_USE_SNAPSHOT=y`). |
 | `self.screen.preview_image` | Download and display an image from `url` on the screen. |
 | `self.assets.set_download_url` | Set the download URL for the assets partition. |
 
@@ -177,6 +177,43 @@ These tools are hidden by default. The backend must pass `withUserTools=true` to
   "id": 4
 }
 ```
+
+### 5. Capture the screen (user-only)
+
+List user-only tools with `"withUserTools": true`, then call snapshot. Omit `url` to receive JPEG in the result.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "self.screen.snapshot",
+    "arguments": { "quality": 80 }
+  },
+  "id": 5
+}
+```
+
+Successful result:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "result": {
+    "content": [
+      {
+        "type": "image",
+        "mimeType": "image/jpeg",
+        "data": "<base64 jpeg>"
+      }
+    ],
+    "isError": false
+  }
+}
+```
+
+To upload instead of returning the image, pass `"url": "https://example.com/upload"`.
 
 ## Notes
 

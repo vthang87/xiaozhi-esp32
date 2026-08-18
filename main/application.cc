@@ -260,6 +260,7 @@ void Application::Run() {
         if (bits & MAIN_EVENT_CLOCK_TICK) {
             clock_ticks_++;
             auto display = Board::GetInstance().GetDisplay();
+            display->OnClockTick();
             display->UpdateStatusBar();
 
             // Print debug info every 10 seconds
@@ -925,6 +926,7 @@ void Application::HandleStateChangedEvent() {
     auto display = board.GetDisplay();
     auto led = board.GetLed();
     led->OnStateChanged();
+    display->DismissIdleEffects();
 
     switch (new_state) {
         case kDeviceStateUnknown:

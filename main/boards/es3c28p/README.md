@@ -83,6 +83,8 @@ The music screen also shows a progress bar and elapsed/total track time.
 Use `Browse` to open folders on the SD card and select the MP3 file to play.
 Hidden and temporary entries whose names start with `.` or `_` are ignored.
 
+![Music screen](docs/music.jpg)
+
 The top status bar shows the current speaker volume as a percentage.
 
 On the Music screen, the touchscreen controls playback by horizontal zone:
@@ -95,3 +97,23 @@ The display shows the playback state and current filename. Music pauses while th
 assistant is listening or speaking, then continues when the device returns to
 idle. Playback controls are locked while an AI conversation is active. The BOOT
 button remains available for the normal assistant interaction.
+
+## Idle display
+
+When the device stays idle:
+
+- The backlight dims after **60 seconds** (configurable).
+- A full-screen clock appears after **30 minutes** (configurable).
+
+Compile-time defaults live under *Idle Display* in `idf.py menuconfig`
+(`IDLE_CLOCK_TIMEOUT_S`, `STANDBY_DIM_TIMEOUT_S`, `STANDBY_DIM_BRIGHTNESS`).
+Set a timeout to `0` to disable that step. Runtime overrides are stored in NVS
+and can be changed with the MCP tools `self.screen.set_idle_clock_timeout`,
+`self.screen.set_standby_dim_timeout`, and `self.screen.set_standby_dim_brightness`.
+
+Tap the screen, press the button, or speak the wake word to restore brightness
+and hide the clock.
+
+![Standby UI](docs/standby-dim.jpg)
+
+![Idle clock](docs/idle-clock.jpg)
