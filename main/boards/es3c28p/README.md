@@ -1,6 +1,7 @@
 # LCDWiki ES3C28P
 
 Support for the LCDWiki ES3C28P 2.8-inch ESP32-S3 display module.
+Firmware version: **2.4.2**.
 
 ## Hardware
 
@@ -63,7 +64,17 @@ serial port does not appear. First install should erase flash so the 16 MB table
 
 Insert a FAT32-formatted MicroSD card before boot. The player scans the card root
 and subdirectories (up to four levels deep) for as many as 256 `.mp3` files.
-Tracks are sorted by their full path.
+Tracks follow the saved playlist order when one exists, otherwise they are sorted
+by their full path.
+
+Use the device web page (`http://<device-ip>/`) to manage music on the card:
+play, pause, skip, and start a track from the library list; browse folders;
+create or rename folders; drag tracks or folders into another folder; download
+MP3 files from a direct HTTP(S) URL (faster than browser upload); upload MP3
+files from the computer (up to 100 MB each); remove tracks or folders; and
+arrange playback order with Up/Down or drag-and-drop. Playback pauses while the
+library is changed, then continues. Web playback controls are locked while an AI
+conversation is active, matching the on-device player.
 
 Use the fixed `AI Chat` and `Music` tabs to switch between the two independent
 screens. AI status and messages remain on the chat screen; playback state and the
@@ -71,6 +82,8 @@ current filename remain on the music screen.
 The music screen also shows a progress bar and elapsed/total track time.
 Use `Browse` to open folders on the SD card and select the MP3 file to play.
 Hidden and temporary entries whose names start with `.` or `_` are ignored.
+
+![Music screen](docs/music.jpg)
 
 The top status bar shows the current speaker volume as a percentage.
 
@@ -84,3 +97,23 @@ The display shows the playback state and current filename. Music pauses while th
 assistant is listening or speaking, then continues when the device returns to
 idle. Playback controls are locked while an AI conversation is active. The BOOT
 button remains available for the normal assistant interaction.
+
+## Idle display
+
+When the device stays idle:
+
+- The backlight dims after **60 seconds** (configurable).
+- A full-screen clock appears after **30 minutes** (configurable).
+
+Compile-time defaults live under *Idle Display* in `idf.py menuconfig`
+(`IDLE_CLOCK_TIMEOUT_S`, `STANDBY_DIM_TIMEOUT_S`, `STANDBY_DIM_BRIGHTNESS`).
+Set a timeout to `0` to disable that step. Runtime overrides are stored in NVS
+and can be changed with the MCP tools `self.screen.set_idle_clock_timeout`,
+`self.screen.set_standby_dim_timeout`, and `self.screen.set_standby_dim_brightness`.
+
+Tap the screen, press the button, or speak the wake word to restore brightness
+and hide the clock.
+
+![Standby UI](docs/standby-dim.jpg)
+
+![Idle clock](docs/idle-clock.jpg)

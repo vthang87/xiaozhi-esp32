@@ -630,6 +630,15 @@ choice ES3C28P_DEFAULT_THEME
         bool "Storybook Garden (Kids)"
 endchoice
 
+config ES3C28P_SCREENSHOT_API
+    bool "Enable local HTTP screenshot API (documentation only)"
+    depends on BOARD_TYPE_ES3C28P
+    default n
+    help
+        Expose GET /api/screenshot on the device web server so a JPEG of the
+        LVGL screen can be captured for documentation. Leave disabled in
+        production firmware. Requires CONFIG_LV_USE_SNAPSHOT.
+
 choice XIAOZHI_NETWORK_TYPE
     prompt "Network Type"
     depends on BOARD_TYPE_WAVESHARE_ESP32_P4_NANO
@@ -876,6 +885,34 @@ config USE_MULTILINE_CHAT_MESSAGE
         with auto-adaptive height.
         When disabled (default), a single-line horizontally scrolling label
         is shown at the bottom of the screen.
+
+menu "Idle Display"
+    config IDLE_CLOCK_TIMEOUT_S
+        int "Idle clock screensaver timeout (seconds, 0=disable)"
+        default 1800
+        range 0 86400
+        help
+            Show a full-screen clock after the device has been idle for this
+            many seconds. Default 1800 (30 minutes). Set 0 to disable.
+            Runtime overrides are stored in NVS (display.clock_timeout).
+
+    config STANDBY_DIM_TIMEOUT_S
+        int "Standby screen dim timeout (seconds, 0=disable)"
+        default 60
+        range 0 86400
+        help
+            Dim the backlight after the device has been idle for this many
+            seconds. Default 60. Set 0 to disable.
+            Runtime overrides are stored in NVS (display.dim_timeout).
+
+    config STANDBY_DIM_BRIGHTNESS
+        int "Standby dim brightness (0-100)"
+        default 10
+        range 0 100
+        help
+            Backlight brightness used while the screen is dimmed in standby.
+            Runtime overrides are stored in NVS (display.dim_brightness).
+endmenu
 
 choice WAKE_WORD_TYPE
     prompt "Wake Word Implementation Type"

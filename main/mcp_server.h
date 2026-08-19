@@ -33,6 +33,9 @@ public:
         encoded_data_ = Base64Encode(data);
     }
 
+    const std::string& mime_type() const { return mime_type_; }
+    const std::string& data() const { return encoded_data_; }
+
     std::string to_json() const {
         cJSON *json = cJSON_CreateObject();
         cJSON_AddStringToObject(json, "type", "image");
@@ -279,7 +282,8 @@ public:
             auto image_content = std::get<ImageContent*>(return_value);
             cJSON* image = cJSON_CreateObject();
             cJSON_AddStringToObject(image, "type", "image");
-            cJSON_AddStringToObject(image, "image", image_content->to_json().c_str());
+            cJSON_AddStringToObject(image, "mimeType", image_content->mime_type().c_str());
+            cJSON_AddStringToObject(image, "data", image_content->data().c_str());
             cJSON_AddItemToArray(content, image);
             delete image_content;
         } else {

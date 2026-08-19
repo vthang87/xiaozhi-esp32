@@ -3,6 +3,7 @@
 #include <material_symbols.h>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <string>
 
 #include "application.h"
@@ -134,6 +135,12 @@ LvglDisplay::~LvglDisplay() {
     }
     if (low_battery_popup_ != nullptr) {
         lv_obj_del(low_battery_popup_);
+    }
+    if (idle_overlay_ != nullptr) {
+        lv_obj_del(idle_overlay_);
+        idle_overlay_ = nullptr;
+        idle_clock_label_ = nullptr;
+        idle_date_label_ = nullptr;
     }
     if (pm_lock_ != nullptr) {
         esp_pm_lock_delete(pm_lock_);
@@ -312,39 +319,210 @@ void LvglDisplay::SetPowerSaveMode(bool on) {
     }
 }
 
+void LvglDisplay::EnsureIdleOverlay() {
+    if (idle_overlay_ != nullptr || !setup_ui_called_) {
+        return;
+    }
+
+    auto screen = lv_screen_active();
+    if (screen == nullptr) {
+        return;
+    }
+
+    auto lvgl_theme = dynamic_cast<LvglTheme*>(current_theme_);
+    const lv_font_t* text_font =
+        (lvgl_theme != nullptr && lvgl_theme->text_font() != nullptr)
+            ? lvgl_theme->text_font()->font()
+            : nullptr;
+
+    idle_overlay_ = lv_obj_create(screen);
+    lv_obj_set_size(idle_overlay_, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_style_radius(idle_overlay_, 0, 0);
+    lv_obj_set_style_border_width(idle_overlay_, 0, 0);
+    lv_obj_set_style_pad_all(idle_overlay_, 0, 0);
+    lv_obj_set_scrollbar_mode(idle_overlay_, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_add_flag(idle_overlay_, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(idle_overlay_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(
+        idle_overlay_,
+        [](lv_event_t* e) {
+            auto display = static_cast<LvglDisplay*>(lv_event_get_user_data(e));
+            Application::GetInstance().Schedule([display]() {
+                if (display != nullptr) {
+                    display->DismissIdleEffects();
+                }
+            });
+        },
+        LV_EVENT_CLICKED, this);
+
+    idle_clock_label_ = lv_label_create(idle_overlay_);
+    lv_label_set_text(idle_clock_label_, "--:--");
+    lv_obj_set_style_text_align(idle_clock_label_, LV_TEXT_ALIGN_CENTER, 0);
+    if (text_font != nullptr) {
+        lv_obj_set_style_text_font(idle_clock_label_, text_font, 0);
+    }
+    const int clock_offset_y = height_ > 32 ? -12 : 0;
+    lv_obj_align(idle_clock_label_, LV_ALIGN_CENTER, 0, clock_offset_y);
+    if (height_ >= 160) {
+        lv_obj_set_style_transform_pivot_x(idle_clock_label_, lv_pct(50), 0);
+        lv_obj_set_style_transform_pivot_y(idle_clock_label_, lv_pct(50), 0);
+        lv_obj_set_style_transform_scale(idle_clock_label_, 512, 0);
+    }
+
+    idle_date_label_ = lv_label_create(idle_overlay_);
+    lv_label_set_text(idle_date_label_, "");
+    lv_obj_set_style_text_align(idle_date_label_, LV_TEXT_ALIGN_CENTER, 0);
+    if (text_font != nullptr) {
+        lv_obj_set_style_text_font(idle_date_label_, text_font, 0);
+    }
+    lv_obj_align(idle_date_label_, LV_ALIGN_CENTER, 0, height_ >= 160 ? 36 : 12);
+    if (height_ <= 32) {
+        lv_obj_add_flag(idle_date_label_, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+void LvglDisplay::RefreshIdleClockText() {
+    if (idle_clock_label_ == nullptr) {
+        return;
+    }
+
+    time_t now = time(nullptr);
+    struct tm* tm = localtime(&now);
+    if (tm == nullptr || tm->tm_year < 2025 - 1900) {
+        lv_label_set_text(idle_clock_label_, "--:--");
+        if (idle_date_label_ != nullptr) {
+            lv_label_set_text(idle_date_label_, "");
+        }
+        return;
+    }
+
+    char time_str[16];
+    strftime(time_str, sizeof(time_str), "%H:%M", tm);
+    lv_label_set_text(idle_clock_label_, time_str);
+
+    if (idle_date_label_ != nullptr && height_ > 32) {
+        char date_str[16];
+        strftime(date_str, sizeof(date_str), "%Y-%m-%d", tm);
+        lv_label_set_text(idle_date_label_, date_str);
+    }
+}
+
+void LvglDisplay::UpdateIdleOverlay() {
+    DisplayLockGuard lock(this);
+    if (!setup_ui_called_) {
+        return;
+    }
+
+    if (!screen_dimmed_ && !clock_visible_) {
+        if (idle_overlay_ != nullptr) {
+            lv_obj_add_flag(idle_overlay_, LV_OBJ_FLAG_HIDDEN);
+        }
+        return;
+    }
+
+    EnsureIdleOverlay();
+    if (idle_overlay_ == nullptr) {
+        return;
+    }
+
+    auto lvgl_theme = dynamic_cast<LvglTheme*>(current_theme_);
+    lv_color_t bg = lv_color_black();
+    lv_color_t fg = lv_color_white();
+    if (lvgl_theme != nullptr) {
+        bg = lvgl_theme->background_color();
+        fg = lvgl_theme->text_color();
+    }
+
+    if (clock_visible_) {
+        lv_obj_set_style_bg_opa(idle_overlay_, LV_OPA_COVER, 0);
+        lv_obj_set_style_bg_color(idle_overlay_, bg, 0);
+        if (idle_clock_label_ != nullptr) {
+            lv_obj_set_style_text_color(idle_clock_label_, fg, 0);
+            lv_obj_remove_flag(idle_clock_label_, LV_OBJ_FLAG_HIDDEN);
+        }
+        if (idle_date_label_ != nullptr) {
+            lv_obj_set_style_text_color(idle_date_label_, fg, 0);
+            if (height_ > 32) {
+                lv_obj_remove_flag(idle_date_label_, LV_OBJ_FLAG_HIDDEN);
+            }
+        }
+        RefreshIdleClockText();
+    } else {
+        lv_obj_set_style_bg_opa(idle_overlay_, LV_OPA_TRANSP, 0);
+        if (idle_clock_label_ != nullptr) {
+            lv_obj_add_flag(idle_clock_label_, LV_OBJ_FLAG_HIDDEN);
+        }
+        if (idle_date_label_ != nullptr) {
+            lv_obj_add_flag(idle_date_label_, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+
+    lv_obj_remove_flag(idle_overlay_, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_move_foreground(idle_overlay_);
+}
+
 bool LvglDisplay::SnapshotToJpeg(std::string& jpeg_data, int quality) {
 #if CONFIG_LV_USE_SNAPSHOT
     DisplayLockGuard lock(this);
 
     lv_obj_t* screen = lv_screen_active();
-    lv_draw_buf_t* draw_buffer = lv_snapshot_take(screen, LV_COLOR_FORMAT_RGB565);
+    // RGB888 avoids RGB565 endian issues. JPEG encoding uses 4:4:4 chroma.
+    v4l2_pix_fmt_t fmt = V4L2_PIX_FMT_RGB24;
+    lv_draw_buf_t* draw_buffer = lv_snapshot_take(screen, LV_COLOR_FORMAT_RGB888);
+    if (draw_buffer == nullptr) {
+        fmt = V4L2_PIX_FMT_RGB565;
+        draw_buffer = lv_snapshot_take(screen, LV_COLOR_FORMAT_RGB565);
+    }
     if (draw_buffer == nullptr) {
         ESP_LOGE(TAG, "Failed to take snapshot, draw_buffer is nullptr");
         return false;
     }
 
-    // swap bytes
-    uint16_t* data = (uint16_t*)draw_buffer->data;
-    size_t pixel_count = draw_buffer->data_size / 2;
-    for (size_t i = 0; i < pixel_count; i++) {
-        data[i] = __builtin_bswap16(data[i]);
+    const uint8_t px_size =
+        lv_color_format_get_size(static_cast<lv_color_format_t>(draw_buffer->header.cf));
+    const uint16_t width = draw_buffer->header.w;
+    const uint16_t height = draw_buffer->header.h;
+    const uint32_t stride = draw_buffer->header.stride ? draw_buffer->header.stride : static_cast<uint32_t>(width) * px_size;
+    const uint32_t packed_stride = static_cast<uint32_t>(width) * px_size;
+    const size_t packed_len = packed_stride * height;
+
+    // LVGL RGB888 is stored B,G,R. JPEG RGB24 expects R,G,B.
+    std::string packed;
+    const uint8_t* pixels = draw_buffer->data;
+    if (fmt == V4L2_PIX_FMT_RGB24) {
+        packed.resize(packed_len);
+        for (uint16_t y = 0; y < height; y++) {
+            const uint8_t* src = draw_buffer->data + static_cast<size_t>(y) * stride;
+            uint8_t* dst = reinterpret_cast<uint8_t*>(packed.data()) + y * packed_stride;
+            for (uint16_t x = 0; x < width; x++) {
+                dst[0] = src[2];
+                dst[1] = src[1];
+                dst[2] = src[0];
+                src += 3;
+                dst += 3;
+            }
+        }
+        pixels = reinterpret_cast<const uint8_t*>(packed.data());
+    } else if (stride != packed_stride) {
+        packed.resize(packed_len);
+        for (uint16_t y = 0; y < height; y++) {
+            memcpy(packed.data() + y * packed_stride,
+                   draw_buffer->data + static_cast<size_t>(y) * stride, packed_stride);
+        }
+        pixels = reinterpret_cast<const uint8_t*>(packed.data());
     }
 
-    // Clear output string and use callback version to avoid pre-allocating large memory blocks
     jpeg_data.clear();
-
-    // Use callback-based JPEG encoder to further save memory
-    bool ret =
-        image_to_jpeg_cb((uint8_t*)draw_buffer->data, draw_buffer->data_size, draw_buffer->header.w,
-                         draw_buffer->header.h, V4L2_PIX_FMT_RGB565, quality,
-                         [](void* arg, size_t index, const void* data, size_t len) -> size_t {
-                             std::string* output = static_cast<std::string*>(arg);
-                             if (data && len > 0) {
-                                 output->append(static_cast<const char*>(data), len);
-                             }
-                             return len;
-                         },
-                         &jpeg_data);
+    bool ret = image_to_jpeg_cb(
+        const_cast<uint8_t*>(pixels), packed_len, width, height, fmt, quality,
+        [](void* arg, size_t /*index*/, const void* data, size_t len) -> size_t {
+            std::string* output = static_cast<std::string*>(arg);
+            if (data && len > 0) {
+                output->append(static_cast<const char*>(data), len);
+            }
+            return len;
+        },
+        &jpeg_data);
     if (!ret) {
         ESP_LOGE(TAG, "Failed to convert image to JPEG");
     }

@@ -33,6 +33,7 @@ public:
     virtual bool SetTextFont(std::shared_ptr<LvglFont> text_font);
 
 protected:
+    virtual void UpdateIdleOverlay() override;
     esp_pm_lock_handle_t pm_lock_ = nullptr;
     lv_display_t* display_ = nullptr;
 
@@ -51,6 +52,13 @@ protected:
     std::chrono::system_clock::time_point last_status_update_time_;
     esp_timer_handle_t notification_timer_ = nullptr;
     std::unique_ptr<DynamicGlyphCache> dynamic_glyph_cache_;
+
+    lv_obj_t* idle_overlay_ = nullptr;
+    lv_obj_t* idle_clock_label_ = nullptr;
+    lv_obj_t* idle_date_label_ = nullptr;
+
+    void EnsureIdleOverlay();
+    void RefreshIdleClockText();
 
     friend class DisplayLockGuard;
     virtual bool Lock(int timeout_ms = 0) = 0;

@@ -124,16 +124,26 @@ static uint8_t* convert_input_to_encoder_buf(const uint8_t* src, uint16_t width,
         return buf;
     }
 
-    // RGB 转换为 YUV422 (YCbYCr) 再输入
-    // 见 https://github.com/78/xiaozhi-esp32/issues/1380#issuecomment-3497156378
-    else if (format == V4L2_PIX_FMT_RGB24 || format == V4L2_PIX_FMT_RGB565 || format == V4L2_PIX_FMT_RGB565X) {
+    // Display snapshots stay RGB888 so the JPEG encoder can use 4:4:4 chroma.
+    // Camera RGB still converts to YUV422; see
+    // https://github.com/78/xiaozhi-esp32/issues/1380#issuecomment-3497156378
+    if (format == V4L2_PIX_FMT_RGB24) {
+        int sz = (int)width * (int)height * 3;
+        uint8_t* buf = (uint8_t*)jpeg_calloc_align(sz, 16);
+        if (!buf)
+            return nullptr;
+        memcpy(buf, src, sz);
+        if (out_fmt)
+            *out_fmt = JPEG_PIXEL_FORMAT_RGB888;
+        if (out_size)
+            *out_size = sz;
+        return buf;
+    }
+
+    else if (format == V4L2_PIX_FMT_RGB565 || format == V4L2_PIX_FMT_RGB565X) {
         esp_imgfx_pixel_fmt_t in_pixel_fmt = ESP_IMGFX_PIXEL_FMT_RGB888;
         uint32_t src_len = 0;
         switch (format) {
-            case V4L2_PIX_FMT_RGB24:
-                in_pixel_fmt = ESP_IMGFX_PIXEL_FMT_RGB888;
-                src_len = static_cast<uint32_t>(width * height * 3);
-                break;
             case V4L2_PIX_FMT_RGB565:
                 in_pixel_fmt = ESP_IMGFX_PIXEL_FMT_RGB565_LE;
                 src_len = static_cast<uint32_t>(width * height * 2);
@@ -367,21 +377,45 @@ static bool encode_with_esp_new_jpeg(const uint8_t* src, size_t src_len, uint16_
     cfg.width = width;
     cfg.height = height;
     cfg.src_type = enc_src_type;
-    cfg.subsampling = (enc_src_type == JPEG_PIXEL_FORMAT_GRAY) ? JPEG_SUBSAMPLE_GRAY : JPEG_SUBSAMPLE_420;
     cfg.quality = quality;
     cfg.rotate = JPEG_ROTATE_0D;
     cfg.task_enable = false;
 
+    jpeg_subsampling_t subsamples[2];
+    int subsample_count = 0;
+    if (enc_src_type == JPEG_PIXEL_FORMAT_GRAY) {
+        subsamples[subsample_count++] = JPEG_SUBSAMPLE_GRAY;
+    } else if (enc_src_type == JPEG_PIXEL_FORMAT_RGB888) {
+        // 4:4:4 keeps UI text sharp; 4:2:0 chroma smear looks like color fringing.
+        subsamples[subsample_count++] = JPEG_SUBSAMPLE_444;
+        subsamples[subsample_count++] = JPEG_SUBSAMPLE_420;
+    } else {
+        subsamples[subsample_count++] = JPEG_SUBSAMPLE_420;
+    }
+
     jpeg_enc_handle_t h = NULL;
-    jpeg_error_t ret = jpeg_enc_open(&cfg, &h);
-    if (ret != JPEG_ERR_OK) {
+    jpeg_error_t ret = JPEG_ERR_FAIL;
+    for (int i = 0; i < subsample_count; i++) {
+        cfg.subsampling = subsamples[i];
+        ret = jpeg_enc_open(&cfg, &h);
+        if (ret == JPEG_ERR_OK) {
+            ESP_LOGI(TAG, "JPEG encode RGB888 subsample=%d", (int)subsamples[i]);
+            break;
+        }
+        h = NULL;
+        ESP_LOGW(TAG, "jpeg_enc_open subsample %d failed: %d", (int)subsamples[i], (int)ret);
+    }
+    if (ret != JPEG_ERR_OK || h == NULL) {
         jpeg_free_align(enc_in);
         ESP_LOGE(TAG, "jpeg_enc_open failed: %d", (int)ret);
         return false;
     }
 
-    // 估算输出缓冲区：宽高的 1.5 倍 + 64KB
+    // Output buffer: RGB 4:4:4 can approach raw size; YUV 4:2:0 is smaller.
     size_t out_cap = (size_t)width * (size_t)height * 3 / 2 + 64 * 1024;
+    if (enc_src_type == JPEG_PIXEL_FORMAT_RGB888) {
+        out_cap = (size_t)width * (size_t)height * 3 + 64 * 1024;
+    }
     if (out_cap < 128 * 1024)
         out_cap = 128 * 1024;
     uint8_t* outbuf = (uint8_t*)malloc_psram(out_cap);
